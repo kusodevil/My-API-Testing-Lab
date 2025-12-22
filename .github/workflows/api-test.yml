@@ -53,10 +53,13 @@ jobs:
         uses: actions/deploy-pages@v4
 
       - name: Slack Notification
-        if: always() # 無論測試成功或失敗都要通知你
+        if: always()
         uses: rtCamp/action-slack-notify@v2
         env:
           SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK_URL }}
           SLACK_TITLE: 'API 測試結果通知'
-          SLACK_MESSAGE: '✅ API 測試全數通過！\n📊 即時儀表板：https://kusodevil.github.io/My-API-Testing-Lab/\n(此報告隨每次推代碼自動更新)'
-          SLACK_COLOR: ${{ job.status == 'success' && 'good' || 'danger' }} # 成功綠色，失敗紅色
+          SLACK_MESSAGE: |
+            ✅ API 測試完成！
+            📊 即時儀表板：https://kusodevil.github.io/My-API-Testing-Lab/
+            (此報告隨每次推代碼自動更新)
+          SLACK_COLOR: ${{ job.status == 'success' && 'good' || 'danger' }}
