@@ -51,3 +51,12 @@ jobs:
       - name: Deploy to GitHub Pages
         id: deployment
         uses: actions/deploy-pages@v4
+
+      - name: Slack Notification
+        if: always() # 無論測試成功或失敗都要通知你
+        uses: rtCamp/action-slack-notify@v2
+        env:
+          SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK_URL }}
+          SLACK_TITLE: 'API 測試結果通知'
+          SLACK_MESSAGE: '最新測試報告已產出，請點擊 GitHub Actions 頁面查看網址。'
+          SLACK_COLOR: ${{ job.status == 'success' && 'good' || 'danger' }} # 成功綠色，失敗紅色
