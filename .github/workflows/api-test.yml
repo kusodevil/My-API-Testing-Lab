@@ -58,5 +58,5 @@ jobs:
         env:
           SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK_URL }}
           SLACK_TITLE: 'API 測試結果通知'
-          SLACK_MESSAGE: '最新測試報告已產出，請點擊 GitHub Actions 頁面查看網址。'
+          SLACK_MESSAGE: '✅ API 測試全數通過！\n📊 即時儀表板：https://kusodevil.github.io/My-API-Testing-Lab/\n(此報告隨每次推代碼自動更新)'
           SLACK_COLOR: ${{ job.status == 'success' && 'good' || 'danger' }} # 成功綠色，失敗紅色
