@@ -19,7 +19,7 @@ jobs:
       - name: Install Newman
         run: npm install -g newman newman-reporter-htmlextra # 安裝心臟與化妝師
 
-        - name: Run API Tests
+      - name: Run API Tests
         env:
           MY_SECRET_KEY: ${{ secrets.MY_API_KEY }} # 從保險箱拿出來，存進環境變數
         run: |
