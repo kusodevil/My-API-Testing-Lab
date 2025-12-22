@@ -1,0 +1,32 @@
+name: API Automated Testing
+on:
+  push:
+    branches: [ main ]  # 只要 main 分支有更新就跑
+
+jobs:
+  test-api:
+    runs-on: ubuntu-latest  # 在雲端啟動一台 Linux 虛擬機
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4  # 把你的程式碼抓到虛擬機裡
+
+      - name: Install Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Install Newman
+        run: npm install -g newman newman-reporter-htmlextra # 安裝心臟與化妝師
+
+      - name: Run API Tests
+        run: |
+          newman run "Swagger Petstore.postman_collection.json" \
+          -r htmlextra \
+          --reporter-htmlextra-export report.html  # 執行測試並產出精美報告
+
+      - name: Upload Report
+        uses: actions/upload-artifact@v4  # 把報告存起來讓你下載
+        with:
+          name: postman-report
+          path: report.html
