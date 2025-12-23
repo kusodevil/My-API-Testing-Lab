@@ -580,7 +580,7 @@
 										"exec": [
 											"// 驗證 API 成功",
 											"pm.test(\"Status code is 200\", function () {",
-											"    pm.response.to.have.status(404);",
+											"    pm.response.to.have.status(200);",
 											"});",
 											"",
 											"// 驗證資料是否為陣列",
