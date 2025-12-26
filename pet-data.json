@@ -1,0 +1,20 @@
+[
+    {
+      "case": "正向測試 - 完整資料",
+      "petName": "Lucky",
+      "status": "available",
+      "expectedCode": 200
+    },
+    {
+      "case": "反向測試 - 狀態碼不符",
+      "petName": "Ghost",
+      "status": "unknown_status_123",
+      "expectedCode": 200
+    },
+    {
+      "case": "邊界測試 - 名字超長",
+      "petName": "ThisIsALongNameOverOneHundredCharactersToTestTheDatabaseLimitOfThisApiEndpointToSeeIfItCrashes",
+      "status": "available",
+      "expectedCode": 200
+    }
+  ]

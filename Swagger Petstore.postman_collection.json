@@ -928,6 +928,19 @@
 				},
 				{
 					"name": "Add a new pet to the store",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(pm.iterationData.get(\"case\"), function () {",
+									"    pm.response.to.have.status(pm.iterationData.get(\"expectedCode\"));",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
 					"request": {
 						"auth": {
 							"type": "oauth2",
@@ -958,14 +971,11 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n  \"name\": \"<string>\",\n  \"photoUrls\": [\n    \"<string>\",\n    \"<string>\"\n  ],\n  \"id\": \"<long>\",\n  \"category\": {\n    \"id\": \"<long>\",\n    \"name\": \"<string>\"\n  },\n  \"tags\": [\n    {\n      \"id\": \"<long>\",\n      \"name\": \"<string>\"\n    },\n    {\n      \"id\": \"<long>\",\n      \"name\": \"<string>\"\n    }\n  ],\n  \"status\": \"available\"\n}",
+							"raw": "{\\n  \\\"name\\\": \\\"{{petName}}\\\",\\n  \\\"status\\\": \\\"{{status}}\\\"\\n}",
 							"options": {
-								"raw": {
-									"headerFamily": "json",
-									"language": "json"
-								}
+								"raw": { "language": "json" }
 							}
-						},
+							},
 						"url": {
 							"raw": "{{baseUrl}}/pet",
 							"host": [
