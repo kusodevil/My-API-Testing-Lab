@@ -30,13 +30,12 @@ jobs:
         run: npm install -g newman newman-reporter-htmlextra
 
       - name: Run API Tests
-        env:
-          MY_SECRET_KEY: ${{ secrets.MY_API_KEY }}
         run: |
           newman run "Swagger Petstore.postman_collection.json" \
-          --env-var "api_key=$MY_SECRET_KEY" \
+          -d pet-data.json \
+          --env-var "api_key=${{ secrets.MY_SECRET_KEY }}" \
           -r htmlextra \
-          --reporter-htmlextra-export index.html # 將檔名改為 index.html 方便網頁讀取
+          --reporter-htmlextra-export index.html
 
       # 新增步驟：將 index.html 打包成網頁格式
       - name: Setup Pages
