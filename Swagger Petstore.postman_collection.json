@@ -1,33 +1,140 @@
 {
 	"info": {
-		"name": "Swagger Petstore Clean",
-		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+		"_postman_id": "e07a8570-9989-4045-b67c-6b71fd9ecb29",
+		"name": "New Collection",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "6057634",
+		"_collection_link": "https://cloudy-desert-867536.postman.co/workspace/iKala-QA~babc08fb-630e-49b7-85af-59390a7032df/collection/6057634-e07a8570-9989-4045-b67c-6b71fd9ecb29?action=share&source=collection_link&creator=6057634"
 	},
 	"item": [
 		{
-			"name": "pet",
-			"item": [
+			"name": "New Request",
+			"event": [
 				{
-					"name": "Add a new pet to the store",
-					"event": [
-						{
-							"listen": "test",
-							"script": {
-								"exec": [
-									"// 1. 優先抓資料檔的值，沒有的話給預設值",
-									"const testCaseName = pm.iterationData.get(\"case\") || \"手動單次測試\";",
-									"const expectedCode = pm.iterationData.get(\"expectedCode\") || 200;",
-									"",
-									"// 2. 執行斷言",
-									"pm.test(testCaseName, function () {",
-									"    pm.response.to.have.status(expectedCode);",
-									"});"
-								],
-								"type": "text/javascript"
-							}
+					"listen": "test",
+					"script": {
+						"exec": [
+							"// 1. 抓取 API 回傳的資料",
+							"const jsonData = pm.response.json();",
+							"",
+							"// 2. 獲取預期名字：優先從資料檔拿，沒有的話從環境變數拿，再沒有就給預設值",
+							"const expectedName = pm.iterationData.get(\"petName\") || pm.environment.get(\"petName\") || \"{{petName}}\";",
+							"",
+							"pm.test(\"檢查新增的寵物名字是否符合預期\", function () {",
+							"    // 這裡要對應你 POST 時送出的名字",
+							"    // 觀察 image_74360d.jpg，你送出的 name 確實是 \"{{petName}}\" 這個字串",
+							"    pm.expect(jsonData.name).to.eql(expectedName);",
+							"});"
+						],
+						"type": "text/javascript",
+						"packages": {},
+						"requests": {}
+					}
+				}
+			],
+			"protocolProfileBehavior": {
+				"disableBodyPruning": true
+			},
+			"request": {
+				"method": "GET",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "",
+					"options": {
+						"raw": {
+							"language": "json"
 						}
+					}
+				},
+				"url": {
+					"raw": "{{baseUrl}}/pet/{{latestPetId}}",
+					"host": [
+						"{{baseUrl}}"
 					],
-					"request": {
+					"path": [
+						"pet",
+						"{{latestPetId}}"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Add a new pet to the store",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"// 將 API 回傳的 id 存入環境變數中，供下一支 API 使用",
+							"const jsonData = pm.response.json();",
+							"pm.environment.set(\"latestPetId\", jsonData.id); ",
+							"",
+							"// 原有的斷言保持不變",
+							"const testCaseName = pm.iterationData.get(\"case\") || \"連動測試 - 新增階段\";",
+							"pm.test(testCaseName, function () {",
+							"    pm.response.to.have.status(200);",
+							"});"
+						],
+						"type": "text/javascript",
+						"packages": {},
+						"requests": {}
+					}
+				}
+			],
+			"request": {
+				"auth": {
+					"type": "oauth2",
+					"oauth2": [
+						{
+							"key": "scope",
+							"value": "read:pets write:pets",
+							"type": "string"
+						},
+						{
+							"key": "authUrl",
+							"value": "https://petstore.swagger.io/oauth/authorize",
+							"type": "string"
+						},
+						{
+							"key": "grant_type",
+							"value": "implicit",
+							"type": "string"
+						}
+					]
+				},
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n  \"name\": \"{{petName}}\",\n  \"status\": \"{{status}}\"\n}",
+					"options": {
+						"raw": {
+							"headerFamily": "json",
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{baseUrl}}/pet",
+					"host": [
+						"{{baseUrl}}"
+					],
+					"path": [
+						"pet"
+					]
+				}
+			},
+			"response": [
+				{
+					"name": "Invalid input",
+					"originalRequest": {
 						"method": "POST",
 						"header": [
 							{
@@ -35,28 +142,37 @@
 								"value": "application/json"
 							},
 							{
-								"key": "Accept",
-								"value": "application/json"
+								"key": "Authorization",
+								"value": "<token>",
+								"description": "Added as a part of security scheme: oauth2"
 							}
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n  \"name\": \"{{petName}}\",\n  \"photoUrls\": [\n    \"https://example.com/photo.jpg\"\n  ],\n  \"status\": \"{{status}}\"\n}"
+							"raw": "{\n  \"name\": \"<string>\",\n  \"photoUrls\": [\n    \"<string>\",\n    \"<string>\"\n  ],\n  \"id\": \"<long>\",\n  \"category\": {\n    \"id\": \"<long>\",\n    \"name\": \"<string>\"\n  },\n  \"tags\": [\n    {\n      \"id\": \"<long>\",\n      \"name\": \"<string>\"\n    },\n    {\n      \"id\": \"<long>\",\n      \"name\": \"<string>\"\n    }\n  ],\n  \"status\": \"available\"\n}",
+							"options": {
+								"raw": {
+									"headerFamily": "json",
+									"language": "json"
+								}
+							}
 						},
 						"url": {
-							"raw": "https://petstore.swagger.io/v2/pet",
-							"protocol": "https",
+							"raw": "{{baseUrl}}/pet",
 							"host": [
-								"petstore",
-								"swagger",
-								"io"
+								"{{baseUrl}}"
 							],
 							"path": [
-								"v2",
 								"pet"
 							]
 						}
-					}
+					},
+					"status": "Method Not Allowed",
+					"code": 405,
+					"_postman_previewlanguage": "text",
+					"header": [],
+					"cookie": [],
+					"body": ""
 				}
 			]
 		}
