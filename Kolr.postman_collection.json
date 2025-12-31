@@ -8,23 +8,103 @@
 	},
 	"item": [
 		{
-			"name": "https://app.stg.kolr.ai/api/v2/workspaces/31187/kol/radar-search-post?country_code=tw&filter_collection=false&filter_kol_type=all",
+			"name": "https://app.stg.kolr.ai/api/v2/user/status",
 			"event": [
 				{
 					"listen": "test",
 					"script": {
 						"exec": [
-							"pm.test(\"公司 API 實戰 - 驗證成功回傳資料\", function () {",
-							"    const jsonData = pm.response.json();",
-							"    ",
-							"    // 1. 驗證狀態碼",
+							"// 1. 基本狀態檢查",
+							"pm.test(\"HTTP 狀態碼為 200\", () => {",
 							"    pm.response.to.have.status(200);",
+							"});",
+							"",
+							"// 2. 提取 ID 的關鍵邏輯",
+							"pm.test(\"成功提取動態工作區 ID\", () => {",
+							"    const response = pm.response.json();",
 							"    ",
-							"    // 2. 驗證 data 欄位是一個陣列",
-							"    pm.expect(jsonData.data).to.be.an('array');",
+							"    // 直接存取 workspaces，跳過不存在的 data 層級",
+							"    // 加入 ?. 確保即使 workspaces 是空的也不會直接當掉",
+							"    const firstWorkspace = response.workspaces?.[0];",
 							"    ",
-							"    // 3. 驗證資料筆數大於 0 (代表真的有搜到 KOL)",
-							"    pm.expect(jsonData.data.length).to.be.above(0);",
+							"    if (firstWorkspace) {",
+							"        const firstId = firstWorkspace.id.toString();",
+							"        ",
+							"        // 存入環境變數",
+							"        pm.environment.set(\"dynamic_workspace_id\", firstId);",
+							"        ",
+							"        console.log(\"✅ 成功！捕捉到 ID:\", firstId);",
+							"        console.log(\"工作區名稱:\", firstWorkspace.name);",
+							"    } else {",
+							"        throw new Error(\"❌ 找不到 workspaces 欄位或陣列為空\");",
+							"    }",
+							"});"
+						],
+						"type": "text/javascript",
+						"packages": {},
+						"requests": {}
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "Cookie",
+						"value": "{{company_cookie}}",
+						"type": "text"
+					}
+				],
+				"url": {
+					"raw": "https://app.stg.kolr.ai/api/v2/user/status",
+					"protocol": "https",
+					"host": [
+						"app",
+						"stg",
+						"kolr",
+						"ai"
+					],
+					"path": [
+						"api",
+						"v2",
+						"user",
+						"status"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "https://app.stg.kolr.ai/api/v2/workspaces/{{dynamic_workspace_id}}/kol/radar-search-post?country_code=tw&filter_collection=false&filter_kol_type=all",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"// 1. 基本狀態檢查",
+							"pm.test(\"HTTP 狀態碼為 200\", () => {",
+							"    pm.response.to.have.status(200);",
+							"});",
+							"",
+							"// 2. 驗證資料結構 (合約測試)",
+							"pm.test(\"驗證回傳資料格式正確\", () => {",
+							"    const response = pm.response.json();",
+							"    ",
+							"    // 確保 data 存在且是陣列",
+							"    pm.expect(response.data).to.be.an('array');",
+							"    ",
+							"    // 如果有資料，檢查第一筆的細節",
+							"    if (response.data.length > 0) {",
+							"        const firstKOL = response.data[0];",
+							"        ",
+							"        // 確保關鍵欄位都有出現 (不論值是多少)",
+							"        pm.expect(firstKOL).to.have.property('post_id');",
+							"        pm.expect(firstKOL).to.have.property('like_count');",
+							"        ",
+							"        // 確保型別正確 (這超重要！防止後端工程師改壞資料格式)",
+							"        pm.expect(typeof firstKOL.post_id).to.equal('string');",
+							"        pm.expect(typeof firstKOL.like_count).to.equal('number');",
+							"    }",
 							"});"
 						],
 						"type": "text/javascript",
@@ -38,73 +118,59 @@
 				"header": [
 					{
 						"key": "accept",
-						"value": "application/json",
-						"disabled": true
+						"value": "application/json"
 					},
 					{
 						"key": "accept-language",
-						"value": "zh-TW,zh;q=0.9,en-US;q=0.8,en;q=0.7,zh-CN;q=0.6",
-						"disabled": true
+						"value": "zh-TW,zh;q=0.9,en-US;q=0.8,en;q=0.7,zh-CN;q=0.6"
 					},
 					{
 						"key": "authorization",
-						"value": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjb21wYW55Ijoi5oSb5Y2h5ouJIiwiY291bnRyeSI6InR3IiwiZW1haWwiOiJqYXkuaHVhbmcrMjE1QGlrYWxhLnR2IiwiZW5hYmxlIjp0cnVlLCJleHAiOjE3Njc3Nzk2NjUsImdyb3VwIjoiZW50ZXJwcmlzZSIsImlkIjoyMTEzOSwiaW5jb21wbGV0ZVJlZ2lzdHJhdGlvbiI6ZmFsc2UsImtvbElkIjpudWxsLCJsYW5ndWFnZSI6InpoIiwibGlua2VkIjpmYWxzZSwib3JpZ19pYXQiOjE3NjcxNzQ4NjUsInBob25lIjoiMDkxOTE5MDA3NCIsInR5cGUiOiJhZCIsInVzZXJuYW1lIjoiSmF5IiwidmVyaWZpZWQiOnRydWV9.OwGwc9jP4zFFgHZHnokJmpAz6Mqin1gpqG8Udl_3u-8",
-						"disabled": true
+						"value": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjb21wYW55Ijoi5oSb5Y2h5ouJIiwiY291bnRyeSI6InR3IiwiZW1haWwiOiJqYXkuaHVhbmcrMjE1QGlrYWxhLnR2IiwiZW5hYmxlIjp0cnVlLCJleHAiOjE3Njc3Nzk2NjUsImdyb3VwIjoiZW50ZXJwcmlzZSIsImlkIjoyMTEzOSwiaW5jb21wbGV0ZVJlZ2lzdHJhdGlvbiI6ZmFsc2UsImtvbElkIjpudWxsLCJsYW5ndWFnZSI6InpoIiwibGlua2VkIjpmYWxzZSwib3JpZ19pYXQiOjE3NjcxNzQ4NjUsInBob25lIjoiMDkxOTE5MDA3NCIsInR5cGUiOiJhZCIsInVzZXJuYW1lIjoiSmF5IiwidmVyaWZpZWQiOnRydWV9.OwGwc9jP4zFFgHZHnokJmpAz6Mqin1gpqG8Udl_3u-8"
 					},
 					{
 						"key": "ikala-bogus-token",
-						"value": "8218111ab2fcee97f4a082a0b774cf4a5fc09146ba5b97ed2608562c591dcdc1",
-						"disabled": true
+						"value": "8218111ab2fcee97f4a082a0b774cf4a5fc09146ba5b97ed2608562c591dcdc1"
 					},
 					{
 						"key": "priority",
-						"value": "u=1, i",
-						"disabled": true
+						"value": "u=1, i"
 					},
 					{
 						"key": "referer",
-						"value": "https://app.stg.kolr.ai/search/post",
-						"disabled": true
+						"value": "https://app.stg.kolr.ai/search/post"
 					},
 					{
 						"key": "sec-ch-ua",
-						"value": "\"Google Chrome\";v=\"143\", \"Chromium\";v=\"143\", \"Not A(Brand\";v=\"24\"",
-						"disabled": true
+						"value": "\"Google Chrome\";v=\"143\", \"Chromium\";v=\"143\", \"Not A(Brand\";v=\"24\""
 					},
 					{
 						"key": "sec-ch-ua-mobile",
-						"value": "?0",
-						"disabled": true
+						"value": "?0"
 					},
 					{
 						"key": "sec-ch-ua-platform",
-						"value": "\"macOS\"",
-						"disabled": true
+						"value": "\"macOS\""
 					},
 					{
 						"key": "sec-fetch-dest",
-						"value": "empty",
-						"disabled": true
+						"value": "empty"
 					},
 					{
 						"key": "sec-fetch-mode",
-						"value": "cors",
-						"disabled": true
+						"value": "cors"
 					},
 					{
 						"key": "sec-fetch-site",
-						"value": "same-origin",
-						"disabled": true
+						"value": "same-origin"
 					},
 					{
 						"key": "token",
-						"value": "jay.huang@ikala.ai",
-						"disabled": true
+						"value": "jay.huang@ikala.ai"
 					},
 					{
 						"key": "user-agent",
-						"value": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.0.0 Safari/537.36",
-						"disabled": true
+						"value": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.0.0 Safari/537.36"
 					},
 					{
 						"key": "Cookie",
@@ -112,7 +178,7 @@
 					}
 				],
 				"url": {
-					"raw": "https://app.stg.kolr.ai/api/v2/workspaces/31187/kol/radar-search-post?country_code=tw&filter_collection=false&filter_kol_type=all",
+					"raw": "https://app.stg.kolr.ai/api/v2/workspaces/{{dynamic_workspace_id}}/kol/radar-search-post?country_code=tw&filter_collection=false&filter_kol_type=all",
 					"protocol": "https",
 					"host": [
 						"app",
@@ -124,7 +190,7 @@
 						"api",
 						"v2",
 						"workspaces",
-						"31187",
+						"{{dynamic_workspace_id}}",
 						"kol",
 						"radar-search-post"
 					],
