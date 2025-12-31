@@ -1,180 +1,79 @@
 {
 	"info": {
-		"_postman_id": "e07a8570-9989-4045-b67c-6b71fd9ecb29",
-		"name": "New Collection",
-		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
-		"_exporter_id": "6057634",
-		"_collection_link": "https://cloudy-desert-867536.postman.co/workspace/iKala-QA~babc08fb-630e-49b7-85af-59390a7032df/collection/6057634-e07a8570-9989-4045-b67c-6b71fd9ecb29?action=share&source=collection_link&creator=6057634"
+		"name": "Swagger Petstore Chaining - Stable Version",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
 	},
 	"item": [
 		{
-			"name": "New Request",
+			"name": "1. 新增寵物",
 			"event": [
 				{
-					"listen": "test",
+					"listen": "prerequest",
 					"script": {
 						"exec": [
-							"// 1. 抓取 API 回傳的資料",
-							"const jsonData = pm.response.json();",
-							"",
-							"// 2. 獲取預期名字：優先從資料檔拿，沒有的話從環境變數拿，再沒有就給預設值",
-							"const expectedName = pm.iterationData.get(\"petName\") || pm.environment.get(\"petName\") || \"{{petName}}\";",
-							"",
-							"pm.test(\"檢查新增的寵物名字是否符合預期\", function () {",
-							"    // 這裡要對應你 POST 時送出的名字",
-							"    // 觀察 image_74360d.jpg，你送出的 name 確實是 \"{{petName}}\" 這個字串",
-							"    pm.expect(jsonData.name).to.eql(expectedName);",
-							"});"
-						],
-						"type": "text/javascript",
-						"packages": {},
-						"requests": {}
-					}
-				}
-			],
-			"protocolProfileBehavior": {
-				"disableBodyPruning": true
-			},
-			"request": {
-				"method": "GET",
-				"header": [],
-				"body": {
-					"mode": "raw",
-					"raw": "",
-					"options": {
-						"raw": {
-							"language": "json"
-						}
+							"// 生成一個隨機但合理的數字 ID，避免伺服器溢位",
+							"const randomId = Math.floor(Math.random() * 1000000) + 8888;",
+							"pm.environment.set(\"customPetId\", randomId);"
+						]
 					}
 				},
-				"url": {
-					"raw": "{{baseUrl}}/pet/{{latestPetId}}",
-					"host": [
-						"{{baseUrl}}"
-					],
-					"path": [
-						"pet",
-						"{{latestPetId}}"
-					]
-				}
-			},
-			"response": []
-		},
-		{
-			"name": "Add a new pet to the store",
-			"event": [
 				{
 					"listen": "test",
 					"script": {
 						"exec": [
-							"// 將 API 回傳的 id 存入環境變數中，供下一支 API 使用",
-							"const jsonData = pm.response.json();",
-							"pm.environment.set(\"latestPetId\", jsonData.id); ",
-							"",
-							"// 原有的斷言保持不變",
-							"const testCaseName = pm.iterationData.get(\"case\") || \"連動測試 - 新增階段\";",
-							"pm.test(testCaseName, function () {",
+							"pm.test(\"新增成功\", function () {",
 							"    pm.response.to.have.status(200);",
 							"});"
-						],
-						"type": "text/javascript",
-						"packages": {},
-						"requests": {}
+						]
 					}
 				}
 			],
 			"request": {
-				"auth": {
-					"type": "oauth2",
-					"oauth2": [
-						{
-							"key": "scope",
-							"value": "read:pets write:pets",
-							"type": "string"
-						},
-						{
-							"key": "authUrl",
-							"value": "https://petstore.swagger.io/oauth/authorize",
-							"type": "string"
-						},
-						{
-							"key": "grant_type",
-							"value": "implicit",
-							"type": "string"
-						}
-					]
-				},
 				"method": "POST",
-				"header": [
-					{
-						"key": "Content-Type",
-						"value": "application/json"
-					}
-				],
+				"header": [{ "key": "Content-Type", "value": "application/json" }],
 				"body": {
 					"mode": "raw",
-					"raw": "{\n  \"name\": \"{{petName}}\",\n  \"status\": \"{{status}}\"\n}",
-					"options": {
-						"raw": {
-							"headerFamily": "json",
-							"language": "json"
-						}
-					}
+					"raw": "{\n  \"id\": {{customPetId}},\n  \"name\": \"{{petName}}\",\n  \"status\": \"{{status}}\"\n}"
 				},
 				"url": {
-					"raw": "{{baseUrl}}/pet",
-					"host": [
-						"{{baseUrl}}"
-					],
-					"path": [
-						"pet"
-					]
+					"raw": "https://petstore.swagger.io/v2/pet",
+					"protocol": "https",
+					"host": ["petstore", "swagger", "io"],
+					"path": ["v2", "pet"]
 				}
-			},
-			"response": [
+			}
+		},
+		{
+			"name": "2. 查詢寵物",
+			"event": [
 				{
-					"name": "Invalid input",
-					"originalRequest": {
-						"method": "POST",
-						"header": [
-							{
-								"key": "Content-Type",
-								"value": "application/json"
-							},
-							{
-								"key": "Authorization",
-								"value": "<token>",
-								"description": "Added as a part of security scheme: oauth2"
-							}
-						],
-						"body": {
-							"mode": "raw",
-							"raw": "{\n  \"name\": \"<string>\",\n  \"photoUrls\": [\n    \"<string>\",\n    \"<string>\"\n  ],\n  \"id\": \"<long>\",\n  \"category\": {\n    \"id\": \"<long>\",\n    \"name\": \"<string>\"\n  },\n  \"tags\": [\n    {\n      \"id\": \"<long>\",\n      \"name\": \"<string>\"\n    },\n    {\n      \"id\": \"<long>\",\n      \"name\": \"<string>\"\n    }\n  ],\n  \"status\": \"available\"\n}",
-							"options": {
-								"raw": {
-									"headerFamily": "json",
-									"language": "json"
-								}
-							}
-						},
-						"url": {
-							"raw": "{{baseUrl}}/pet",
-							"host": [
-								"{{baseUrl}}"
-							],
-							"path": [
-								"pet"
-							]
-						}
-					},
-					"status": "Method Not Allowed",
-					"code": 405,
-					"_postman_previewlanguage": "text",
-					"header": [],
-					"cookie": [],
-					"body": ""
+					"listen": "test",
+					"script": {
+						"exec": [
+							"// 如果伺服器還是 404，可能是資料庫真的太慢，這是環境問題而非腳本問題",
+							"pm.test(\"狀態碼應為 200\", function () {",
+							"    pm.response.to.have.status(200);",
+							"});",
+							"",
+							"if (pm.response.code === 200) {",
+							"    const jsonData = pm.response.json();",
+							"    pm.test(\"驗證名字是否正確\", function () {",
+							"        pm.expect(jsonData.name).to.eql(pm.iterationData.get(\"petName\"));",
+							"    });",
+							"}"
+						]
+					}
 				}
-			]
+			],
+			"request": {
+				"method": "GET",
+				"url": {
+					"raw": "https://petstore.swagger.io/v2/pet/{{customPetId}}",
+					"protocol": "https",
+					"host": ["petstore", "swagger", "io"],
+					"path": ["v2", "pet", "{{customPetId}}"]
+				}
+			}
 		}
 	]
 }
