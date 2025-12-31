@@ -37,6 +37,13 @@ jobs:
           -r htmlextra \
           --reporter-htmlextra-export index.html
 
+      - name: Run Company API Test
+        run: |
+          newman run ./Kolr.postman_collection.json \
+          -e ./STG-Env.postman_environment.json \
+          --env-var "company_cookie=${{ secrets.COMPANY_COOKIE }}" \
+          --reporters cli,rtbot
+
       # 新增步驟：將 index.html 打包成網頁格式
       - name: Setup Pages
         uses: actions/configure-pages@v4

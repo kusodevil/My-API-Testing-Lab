@@ -1,0 +1,151 @@
+{
+	"info": {
+		"_postman_id": "ad97f893-effd-4ec3-a401-27bbd5419173",
+		"name": "Kolr",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "6057634",
+		"_collection_link": "https://cloudy-desert-867536.postman.co/workspace/iKala-QA~babc08fb-630e-49b7-85af-59390a7032df/collection/6057634-ad97f893-effd-4ec3-a401-27bbd5419173?action=share&source=collection_link&creator=6057634"
+	},
+	"item": [
+		{
+			"name": "https://app.stg.kolr.ai/api/v2/workspaces/31187/kol/radar-search-post?country_code=tw&filter_collection=false&filter_kol_type=all",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"公司 API 實戰 - 驗證成功回傳資料\", function () {",
+							"    const jsonData = pm.response.json();",
+							"    ",
+							"    // 1. 驗證狀態碼",
+							"    pm.response.to.have.status(200);",
+							"    ",
+							"    // 2. 驗證 data 欄位是一個陣列",
+							"    pm.expect(jsonData.data).to.be.an('array');",
+							"    ",
+							"    // 3. 驗證資料筆數大於 0 (代表真的有搜到 KOL)",
+							"    pm.expect(jsonData.data.length).to.be.above(0);",
+							"});"
+						],
+						"type": "text/javascript",
+						"packages": {},
+						"requests": {}
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "accept",
+						"value": "application/json",
+						"disabled": true
+					},
+					{
+						"key": "accept-language",
+						"value": "zh-TW,zh;q=0.9,en-US;q=0.8,en;q=0.7,zh-CN;q=0.6",
+						"disabled": true
+					},
+					{
+						"key": "authorization",
+						"value": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjb21wYW55Ijoi5oSb5Y2h5ouJIiwiY291bnRyeSI6InR3IiwiZW1haWwiOiJqYXkuaHVhbmcrMjE1QGlrYWxhLnR2IiwiZW5hYmxlIjp0cnVlLCJleHAiOjE3Njc3Nzk2NjUsImdyb3VwIjoiZW50ZXJwcmlzZSIsImlkIjoyMTEzOSwiaW5jb21wbGV0ZVJlZ2lzdHJhdGlvbiI6ZmFsc2UsImtvbElkIjpudWxsLCJsYW5ndWFnZSI6InpoIiwibGlua2VkIjpmYWxzZSwib3JpZ19pYXQiOjE3NjcxNzQ4NjUsInBob25lIjoiMDkxOTE5MDA3NCIsInR5cGUiOiJhZCIsInVzZXJuYW1lIjoiSmF5IiwidmVyaWZpZWQiOnRydWV9.OwGwc9jP4zFFgHZHnokJmpAz6Mqin1gpqG8Udl_3u-8",
+						"disabled": true
+					},
+					{
+						"key": "ikala-bogus-token",
+						"value": "8218111ab2fcee97f4a082a0b774cf4a5fc09146ba5b97ed2608562c591dcdc1",
+						"disabled": true
+					},
+					{
+						"key": "priority",
+						"value": "u=1, i",
+						"disabled": true
+					},
+					{
+						"key": "referer",
+						"value": "https://app.stg.kolr.ai/search/post",
+						"disabled": true
+					},
+					{
+						"key": "sec-ch-ua",
+						"value": "\"Google Chrome\";v=\"143\", \"Chromium\";v=\"143\", \"Not A(Brand\";v=\"24\"",
+						"disabled": true
+					},
+					{
+						"key": "sec-ch-ua-mobile",
+						"value": "?0",
+						"disabled": true
+					},
+					{
+						"key": "sec-ch-ua-platform",
+						"value": "\"macOS\"",
+						"disabled": true
+					},
+					{
+						"key": "sec-fetch-dest",
+						"value": "empty",
+						"disabled": true
+					},
+					{
+						"key": "sec-fetch-mode",
+						"value": "cors",
+						"disabled": true
+					},
+					{
+						"key": "sec-fetch-site",
+						"value": "same-origin",
+						"disabled": true
+					},
+					{
+						"key": "token",
+						"value": "jay.huang@ikala.ai",
+						"disabled": true
+					},
+					{
+						"key": "user-agent",
+						"value": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.0.0 Safari/537.36",
+						"disabled": true
+					},
+					{
+						"key": "Cookie",
+						"value": "{{company_cookie}}"
+					}
+				],
+				"url": {
+					"raw": "https://app.stg.kolr.ai/api/v2/workspaces/31187/kol/radar-search-post?country_code=tw&filter_collection=false&filter_kol_type=all",
+					"protocol": "https",
+					"host": [
+						"app",
+						"stg",
+						"kolr",
+						"ai"
+					],
+					"path": [
+						"api",
+						"v2",
+						"workspaces",
+						"31187",
+						"kol",
+						"radar-search-post"
+					],
+					"query": [
+						{
+							"key": "country_code",
+							"value": "tw"
+						},
+						{
+							"key": "filter_collection",
+							"value": "false"
+						},
+						{
+							"key": "filter_kol_type",
+							"value": "all"
+						}
+					]
+				},
+				"description": "Generated from cURL: curl 'https://app.stg.kolr.ai/api/v2/workspaces/31187/kol/radar-search-post?country_code=tw&filter_collection=false&filter_kol_type=all' \\\n  -H 'accept: application/json' \\\n  -H 'accept-language: zh-TW,zh;q=0.9,en-US;q=0.8,en;q=0.7,zh-CN;q=0.6' \\\n  -H 'authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjb21wYW55Ijoi5oSb5Y2h5ouJIiwiY291bnRyeSI6InR3IiwiZW1haWwiOiJqYXkuaHVhbmcrMjE1QGlrYWxhLnR2IiwiZW5hYmxlIjp0cnVlLCJleHAiOjE3Njc3Nzk2NjUsImdyb3VwIjoiZW50ZXJwcmlzZSIsImlkIjoyMTEzOSwiaW5jb21wbGV0ZVJlZ2lzdHJhdGlvbiI6ZmFsc2UsImtvbElkIjpudWxsLCJsYW5ndWFnZSI6InpoIiwibGlua2VkIjpmYWxzZSwib3JpZ19pYXQiOjE3NjcxNzQ4NjUsInBob25lIjoiMDkxOTE5MDA3NCIsInR5cGUiOiJhZCIsInVzZXJuYW1lIjoiSmF5IiwidmVyaWZpZWQiOnRydWV9.OwGwc9jP4zFFgHZHnokJmpAz6Mqin1gpqG8Udl_3u-8' \\\n  -b 'G_AUTHUSER_H=0; __lt__cid=069db442-8e3c-4f47-b8f5-2347da032692; G_ENABLED_IDPS=google; __stripe_mid=220de6b0-40d4-4adb-bb09-6f381502bd8c609543; loginTime=1740035517; GCP_IAP_UID=117649313819262597441; _ga=GA1.1.291086656.1744683136; _fbp=fb.1.1744683136595.414550019547094600; utm_source=chrome-extension; _ga_Z6CLDPSBMG=deleted; _ga_Z6CLDPSBMG=deleted; __Host-GCP_IAP_AUTH_TOKEN_=ASPJNyDVWzSWpMtDeWQ5Gtf9q9bqMtdWMMMjKFuJ54zu77zH7bpoOMfQFXU6Q-Og6TgSDX-Onz8m6T7f6X-ATpAWOHHRTBKGIQsc0m4UERHQ4Dks8zWRTNvbp-HFX3O_W5Q04P3FxZJV07ZJr_4EtrSsEkLC7k9nMTCPKCpUVd02DRFDlnKq9PmPYakB7TXY3d0WPaV1omiBs3WVODMaWXtIdXrdQp4UjAFWVZNLIH_8neWfj-gXYxBBx7hra1yKNRdgXLz8YZtDtKf-F_p5wiPaSWvR9HQ2Fx4Ypkm4r0bP7TbfDD8jIZRWOe4NiPpLVjHKKRUVTW0NkZ4amxdlU9aJDKQuzHUJQz8gm8A-6VEe7ztGc6he7VQn6lOeIgzuv-d2qI53QV_OY3j7Ni8r_SKHlefwJezm9SWbaog1tc8jKQrUzQZj_SlDVCXp5K69_PfM2I-iODb1D2krqqVlSNMH-0ycTHovDqvxt6es_mNsfFW0v69aGqmBG4kagt-r1GQAdvqQ1J86Kzib0Trwx9wXmpReELXXr-Id34OYfE27U6w0cpS1Basnf5ACut1OLUeCAaxrogFO1Rho4otXYn1N05g9v8sH6DoyiONPyVy6abProuruFbFkqRqC4QgO6gwTi4ItQA7SjcoonvjinPzcElJXSoa4jCkdEGAt9WHbnwGwh90RAbXup3w3k2CNO3d2ek1LtuZw__LT0BwkjSb3hbZxHHFjJU0U5nJusj2ykTMwHqCbWL5K1S3STQPNsCrzFLynygBfIjEDZ1x9VMNSuunmfM0ZPYAthSz-abGwe-vPv7m1rAdQk10n0G5IjOg4mgaoxITtWw81Wk6toOOAT-xEXqIrpGfK1gUA38DGGLsMy2SyOsqFyj6I382bq8hgHBgmZ33dtANt1fA6Oq2THOowvttfa67Vi42WwdmF9sUr2gLfWR7BpNIPPTPNK4iwLbNktsc6CJy9ooc2Dc4fLzKjhTkK71oB068LRDq04ja-jG-QJ95Lnt07WfWULoS-x0MDL4PwOhG797WIXviq5l3GYBXAPK_9rJUd4wfp5VjenSqYYYlLr9RTpNTXhihyz4qwqAx1-KXfVlW59XmJ_HHRLzh7aPq-LWNYoHNZS6v3HK6ngjhqFmFlFJPOwlgRcT9vIOzKUHHsr33OjJoC5TP4eHdWkIARTartxxR88n60v1sLQNBv2z-_b7W8mHwzX75WsTYDu8NDAaIK1HF7_5xMQbW8QIpyCeFMNivw7FdvpJVmlfdG_nzYYrBH37exuNky6LEHfr4eJ3ShWabip_Xu2FP5p7mB3uHX53STJ33tJilhc0gKw959Aro5LCg7AsxnI8301qhBvXbnj7fLILdsS89mLNSatRYFurQ5h7quSdHrm_6eDelxbm7DHEfUA7lfYQu1UzowKSvDPjr9OlWzWUG0jIYI12TbFEPFtj2U_ELf5biKLCrLna4FDLpV6sk1QnhJZQUegB9GWa0iE-gx8X022lzHrZgtR6Xzh8Q-PYI_FS_v43r0ysJOHFOhj1LOCbuVXpWrsQ7RHTuSTAx9U2V9hBRIOuqlo7Rp6b6hr_Ld5smbULk-42YLey0wNEz4QRLV0LTxzacA2sGmoUqVPdtXFN18yOyAYCkUAz4dOQ-ZAN3QfetO974k_igedBlwTnKsu7_AHFZ3oEsDO9XmvipCIQcNJAT41JjX4Bd3AGzjGaqlGhy5i9hWuA-hNVHLBm-_AWXyimUU_TM; AMP_MKTG_dc51a8be5d=JTdCJTdE; AMP_MKTG_3dd2c88def=JTdCJTdE; utm_campaign=1111; utm_medium=jay; utm_source=customizes-trial; AMP_dc51a8be5d=JTdCJTIyZGV2aWNlSWQlMjIlM0ElMjJiNzE5Y2EyOS03YjM3LTQ0ZDItOWUwNC0yMjJlMjBhNzI1MjMlMjIlMkMlMjJ1c2VySWQlMjIlM0ElMjIxMWRhYWQxMC02NTExLTQ5N2ItYjk5ZS04ZGMyYWI1NTEwZTAlMjIlMkMlMjJzZXNzaW9uSWQlMjIlM0ExNzYyODMyNTcyOTk2JTJDJTIyb3B0T3V0JTIyJTNBZmFsc2UlMkMlMjJsYXN0RXZlbnRUaW1lJTIyJTNBMTc2MjgzMjYwODk1MiUyQyUyMmxhc3RFdmVudElkJTIyJTNBNzclMkMlMjJwYWdlQ291bnRlciUyMiUzQTElN0Q=; AMP_3dd2c88def=JTdCJTIyZGV2aWNlSWQlMjIlM0ElMjI2MGEwNDViMS0xMGYwLTRhNTYtOGVjZS00ZWRiMWY4M2M5N2IlMjIlMkMlMjJ1c2VySWQlMjIlM0ElMjI4MzNkY2ZhMC0xNjk0LTQ2YjYtOTE1YS1jNDg0MTMzNTgxNWQlMjIlMkMlMjJzZXNzaW9uSWQlMjIlM0ExNzY1Mjc1MjQxOTg2JTJDJTIyb3B0T3V0JTIyJTNBZmFsc2UlMkMlMjJsYXN0RXZlbnRUaW1lJTIyJTNBMTc2NTI3NTYzNzE2NCUyQyUyMmxhc3RFdmVudElkJTIyJTNBNzIlMkMlMjJwYWdlQ291bnRlciUyMiUzQTklN0Q=; fbm_413650438757128=base_domain=.app.stg.kolr.ai; AMP_MKTG_f5daff674a=JTdCJTdE; isSingleLogin=false; AMP_MKTG_28f187abae=JTdCJTIycmVmZXJyZXIlMjIlM0ElMjJodHRwcyUzQSUyRiUyRnByb2QtcmVkaXJlY3QudGFwcGF5c2RrLmNvbSUyRiUyMiUyQyUyMnJlZmVycmluZ19kb21haW4lMjIlM0ElMjJwcm9kLXJlZGlyZWN0LnRhcHBheXNkay5jb20lMjIlN0Q=; _clck=1j1yt9i%5E2%5Eg2b%5E0%5E1995; fs_uid=#o-1Q2XYA-na1#8717edb7-fe1a-4e3c-a807-e0142309a571:d18d036c-af76-4893-8429-f49d2893534c:1767166546063::1#4391671e#/1798637733; AMP_28f187abae=JTdCJTIyZGV2aWNlSWQlMjIlM0ElMjIwZThiYzVlZi0zNGJmLTQ5ZTgtYjE4OC1lNDllMTVkOGU1MjglMjIlMkMlMjJ1c2VySWQlMjIlM0ElMjIyMTEzOSUyMiUyQyUyMnNlc3Npb25JZCUyMiUzQTE3NjcxNjc2NTI2NDklMkMlMjJvcHRPdXQlMjIlM0FmYWxzZSUyQyUyMmxhc3RFdmVudFRpbWUlMjIlM0ExNzY3MTY3NjUyNjUxJTJDJTIybGFzdEV2ZW50SWQlMjIlM0ExNDgxOSUyQyUyMnBhZ2VDb3VudGVyJTIyJTNBMCU3RA==; _clsk=1imzrj3%5E1767168188938%5E4%5E1%5Ei.clarity.ms%2Fcollect; _ga_MP5C98G0L5=GS2.1.s1767167652$o422$g1$t1767168192$j60$l0$h922606259; _gcl_au=1.1.920886718.1760321130.814859215.1767168270.1767168291; __Host-GCP_IAP_AUTH_TOKEN_F0CFF7B92F471CCE=AVBiXYilghH_dC3Pesehtyu3SJiAq_r-aslO_LHrg5UelMg9ebkmBSDAYeT8GiMnbbLjsiKzfOdVs_gsL6ubrxHuI5l9cpOsWiF1YLDKRnyYt8F0oS5Vlaxpl9tY-8HAMaVwCtyntJdPdvvFhKFTU2oaRWt4sKDf7sSf2hlYhf0ovBSD0wg8YFc3hqUM949KoGFhLeXx2C6ZuC6XiwYOzOkVKbyEGqGdQGmIDILNv2OVSJPghTloV3EWdm1UaOTF8r6Dm-n0c7mBRacRgZTVcnthykdGdWHNTcRwVYnwLsQcqUZoON6Gws9rfEhHtscixBlf4SxZ3gdoWFjcwJsNdGkH3yXZ8nFBI4eWlMsrAeERE37pvwFVdj-J-joR4Jv6RFmrO-wk0BBNWuf_e6Otg3Uh3TgI69lOqf_42vMlDfK2qAhZoXGkB5N_yC5JyE609FsMIj-JOuNE_8ELkfGGbDG82edMHtdKfh2eR6i2aysXqBLXCaiZjhAD0UVD4IZh6vUfNsWvrbYsDFnGDA4VvzqBns4_yia8uNQuz4BDkL6JfO3dvkeJf4ArvPgtcFCdoqJD1PX2dJCU6PIgn6Cx34pY-MxRP0209tj22xJvytLBsC1P2djnPtyjlbjk0aax_sWSh6NFucRxctDKNbEdVEpDzlm1dPKl0WUcg525XluUlvNZ4bTntl36qiFrY2dp1vrLgWn5NiqW-nRNB61xvH9O7902OXCawLrsyf4avblcgqK6KqZEcqdOfmAkr6uVR0aeWuDli61YXO9tpI78y4AZCRnTedLDqGW2Dyh-tEFi9D3v_OIwbydQyxlhx7JJkk-9GXhc6QPDNDHmdiQgXzrOOcSpugr0swDZT9RO-9Rl1atw6JYM_TI_D-LpOWV9HCJrelaW7pJWlwRIawg4lAx9PR3rGUmXY8hT5PFEgHU4jT1yViLLaL7jOLu17ovCoS1EMWcfVvmDTQqxQ0WAhwk4EUPHfZ3ltK0g_PHGRd4pmBVgsehyn0luVSoi6ZFp31QmK3tra4msMk7he39as0bqufHQjAYjr1bFJDBpPow6ZpWYf9oLMstUe_fQCxcrQvaFS1zB3MqXBmV8RMIYekNhj7kXwDwp8esihOgUVViTo7DICyFNWQZ32vtUxUY_AO4jotjABu_NKekjBeGDQ42aCBkfhH9df5unQvDj1Pzr_iGgxw-V3e94r2DY1jFsUD8mBd_KJRtGSpm08GqXFbqYDuIGJvPS9JYkJLirZpaIhhi221Rv2JExHbKCZR3bbCGohdmeueYIEqH5lQT6i8zj_HDYA1LJw3lg4kkduc8u6spdAxOC4BtrqmuicpRR29WBkT_ooKmAGlAwFxwggSWD4QXBiJSOrGxKQIoGGwa5awrGv-Fy6biIF6xJ5mqD--US_OrJFDD4ol1pp82ql91RSA-96w6ff2yGNYXR0Mr9dLo3cWbYAiz6pcfSNaFS-Wb8zJGrQ39F7qjIZLHU4dD9VXelCkYyOlNuHyXiJ0bN_fJHZB4qNVAkshgO17sRaHOiAf7pnKeeaVu827iD9_R1U57Put5PlLbHQcZQ6jsxtHVAdGPyyGJQ_uYN0lpNNcNOLB4IizfyHCPyQhHBYxJs03m0Flt2hnB1OaKVk47CiXiLQ1XizqAVSZb5xDUNncF4M_eEz-coEW8S_dUdvhynf-asOya-NClWRYXBJXZ-2CMS1ZNZy6u9Q_zxIMQGNbCJH8Sybs_LPr9FQg; __lt__sid=eb55ff64-a6674551; userToken=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjb21wYW55Ijoi5oSb5Y2h5ouJIiwiY291bnRyeSI6InR3IiwiZW1haWwiOiJqYXkuaHVhbmcrMjE1QGlrYWxhLnR2IiwiZW5hYmxlIjp0cnVlLCJleHAiOjE3Njc3Nzk2NjUsImdyb3VwIjoiZW50ZXJwcmlzZSIsImlkIjoyMTEzOSwiaW5jb21wbGV0ZVJlZ2lzdHJhdGlvbiI6ZmFsc2UsImtvbElkIjpudWxsLCJsYW5ndWFnZSI6InpoIiwibGlua2VkIjpmYWxzZSwib3JpZ19pYXQiOjE3NjcxNzQ4NjUsInBob25lIjoiMDkxOTE5MDA3NCIsInR5cGUiOiJhZCIsInVzZXJuYW1lIjoiSmF5IiwidmVyaWZpZWQiOnRydWV9.OwGwc9jP4zFFgHZHnokJmpAz6Mqin1gpqG8Udl_3u-8; AMP_f5daff674a=JTdCJTIyZGV2aWNlSWQlMjIlM0ElMjI2NDJkOTBhNi03NTRlLTQyMTEtYjU3NC02MTY0ZTczOWI0ZDMlMjIlMkMlMjJ1c2VySWQlMjIlM0ElMjIyMTEzOSUyMiUyQyUyMnNlc3Npb25JZCUyMiUzQTE3NjcxNzQxNzIzNDUlMkMlMjJvcHRPdXQlMjIlM0FmYWxzZSUyQyUyMmxhc3RFdmVudFRpbWUlMjIlM0ExNzY3MTc1MDk1MzAwJTJDJTIybGFzdEV2ZW50SWQlMjIlM0E0OTM4MyUyQyUyMnBhZ2VDb3VudGVyJTIyJTNBNSU3RA==; _ga_Z6CLDPSBMG=GS2.1.s1767174171$o578$g1$t1767175095$j60$l0$h0' \\\n  -H 'ikala-bogus-token: 8218111ab2fcee97f4a082a0b774cf4a5fc09146ba5b97ed2608562c591dcdc1' \\\n  -H 'priority: u=1, i' \\\n  -H 'referer: https://app.stg.kolr.ai/search/post' \\\n  -H 'sec-ch-ua: \"Google Chrome\";v=\"143\", \"Chromium\";v=\"143\", \"Not A(Brand\";v=\"24\"' \\\n  -H 'sec-ch-ua-mobile: ?0' \\\n  -H 'sec-ch-ua-platform: \"macOS\"' \\\n  -H 'sec-fetch-dest: empty' \\\n  -H 'sec-fetch-mode: cors' \\\n  -H 'sec-fetch-site: same-origin' \\\n  -H 'token: jay.huang@ikala.ai' \\\n  -H 'user-agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.0.0 Safari/537.36'"
+			},
+			"response": []
+		}
+	]
+}
