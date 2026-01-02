@@ -44,6 +44,8 @@ jobs:
       - name: Update Company Cookie
         run: npm run update-cookie
         env:
+          IAP_EMAIL: ${{ secrets.IAP_EMAIL }}
+          IAP_PASSWORD: ${{ secrets.IAP_PASSWORD }}
           COMPANY_EMAIL: ${{ secrets.COMPANY_EMAIL }}
           COMPANY_PASSWORD: ${{ secrets.COMPANY_PASSWORD }}
 

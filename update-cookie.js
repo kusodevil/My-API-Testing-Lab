@@ -24,56 +24,76 @@ const fs = require('fs');
             waitUntil: 'networkidle2'
         });
 
-        // 等待登入表單載入
-        // 注意：您可能需要根據實際的登入頁面調整 selector
-        console.log('⌨️  輸入帳號密碼...');
+        // ============================================
+        // 第一階段：Google IAP 登入
+        // ============================================
+        console.log('🔐 第一階段：Google IAP 登入');
 
-        // 如果是 Google IAP，可能需要點擊 Google 登入按鈕
-        // 這裡提供兩種情境的程式碼
-
-        // Google IAP 登入流程
-        console.log('📧 開始 Google IAP 登入流程...');
-
-        // 等待並輸入 email
+        // 等待並輸入 Google email
         await page.waitForSelector('input[type="email"]', { timeout: 30000 });
-        await page.type('input[type="email"]', process.env.COMPANY_EMAIL, { delay: 100 });
-        console.log('✅ 已輸入 email');
+        await page.type('input[type="email"]', process.env.IAP_EMAIL, { delay: 100 });
+        console.log('✅ 已輸入 IAP Email:', process.env.IAP_EMAIL);
 
-        // 點擊"下一步"按鈕（Google 登入第一步）
+        // 點擊"下一步"
         await new Promise(resolve => setTimeout(resolve, 1000));
         await page.keyboard.press('Enter');
         console.log('⏭️  已點擊下一步');
 
-        // 等待密碼輸入框出現（可能需要較長時間）
-        try {
-            await page.waitForSelector('input[type="password"]', { visible: true, timeout: 30000 });
-            await new Promise(resolve => setTimeout(resolve, 1000));
-            await page.type('input[type="password"]', process.env.COMPANY_PASSWORD, { delay: 100 });
-            console.log('✅ 已輸入密碼');
+        // 等待並輸入 Google 密碼
+        await page.waitForSelector('input[type="password"]', { visible: true, timeout: 30000 });
+        await new Promise(resolve => setTimeout(resolve, 1000));
+        await page.type('input[type="password"]', process.env.IAP_PASSWORD, { delay: 100 });
+        console.log('✅ 已輸入 IAP 密碼');
 
-            // 點擊登入
-            await new Promise(resolve => setTimeout(resolve, 1000));
-            await page.keyboard.press('Enter');
-            console.log('🔐 已送出登入');
-        } catch (passwordError) {
-            console.log('⚠️  密碼輸入框未出現，可能已經登入或需要其他驗證方式');
-            // 有些情況下可能已經有 session，直接繼續
-        }
+        // 送出 IAP 登入
+        await new Promise(resolve => setTimeout(resolve, 1000));
+        await page.keyboard.press('Enter');
+        console.log('🔐 已送出 IAP 登入');
 
-        console.log('⏳ 等待登入完成...');
-
-        // 不等待 navigation，改為等待特定元素或 URL 變化
-        // 因為 IAP 登入後可能不會觸發 navigation 事件
+        // 等待 IAP 驗證完成
+        console.log('⏳ 等待 IAP 驗證...');
         await new Promise(resolve => setTimeout(resolve, 5000));
 
-        // 檢查是否登入成功（URL 應該已經不是登入頁面）
+        // ============================================
+        // 第二階段：公司網站登入
+        // ============================================
+        console.log('🏢 第二階段：公司網站登入');
+
+        // 等待公司登入頁面的 email 輸入框
+        try {
+            await page.waitForSelector('input[type="email"], input[name="email"], input[name="username"]', { timeout: 30000 });
+            const emailInput = await page.$('input[type="email"], input[name="email"], input[name="username"]');
+
+            if (emailInput) {
+                await emailInput.type(process.env.COMPANY_EMAIL, { delay: 100 });
+                console.log('✅ 已輸入公司帳號');
+
+                // 輸入公司密碼
+                await new Promise(resolve => setTimeout(resolve, 500));
+                const passwordInput = await page.$('input[type="password"], input[name="password"]');
+
+                if (passwordInput) {
+                    await passwordInput.type(process.env.COMPANY_PASSWORD, { delay: 100 });
+                    console.log('✅ 已輸入公司密碼');
+
+                    // 送出登入
+                    await new Promise(resolve => setTimeout(resolve, 1000));
+                    await page.keyboard.press('Enter');
+                    console.log('🔐 已送出公司登入');
+
+                    // 等待登入完成
+                    await new Promise(resolve => setTimeout(resolve, 5000));
+                }
+            }
+        } catch (secondLoginError) {
+            console.log('ℹ️  未偵測到第二階段登入頁面，可能 IAP 後直接進入系統');
+        }
+
+        console.log('⏳ 等待頁面載入完成...');
+        await new Promise(resolve => setTimeout(resolve, 3000));
+
         const currentUrl = page.url();
         console.log('當前 URL:', currentUrl);
-
-        if (currentUrl.includes('/login')) {
-            console.log('⚠️  似乎還在登入頁面，等待更久一點...');
-            await new Promise(resolve => setTimeout(resolve, 10000));
-        }
 
         console.log('🍪 正在提取 Cookies...');
         // 取得所有 cookies (使用 CDP session 獲取)

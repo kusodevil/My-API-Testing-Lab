@@ -1,38 +1,53 @@
-# 🍪 Cookie 更新指南
+# 🍪 Cookie 自動更新指南
 
 ## 問題說明
-因為公司網站使用 IAP (Identity-Aware Proxy) 並啟用 2FA，Cookie 會定期過期，需要定期更新以確保 API 測試正常運作。
+因為公司網站使用 IAP (Identity-Aware Proxy) 兩階段登入，Cookie 會定期過期，需要自動更新以確保 API 測試正常運作。
+
+## 登入流程
+1. **第一階段**：Google IAP 驗證（使用 Google Workspace 帳號）
+2. **第二階段**：公司系統登入（使用公司內部帳密）
 
 ## 解決方案
-使用輔助工具開啟瀏覽器，手動完成登入（包含 2FA），然後自動提取 Cookie。
+使用 Puppeteer 自動完成兩階段登入並更新 Cookie。
 
 ---
 
-## 📋 更新 Cookie 步驟
+## 📋 GitHub Secrets 設定
 
-### 方法：使用輔助工具半自動更新
+前往 GitHub Repository Settings 設定以下 4 個 secrets：
+https://github.com/kusodevil/My-API-Testing-Lab/settings/secrets/actions
 
-當 Cookie 過期時（通常 API 測試會開始失敗），執行以下步驟：
+| Secret 名稱 | 說明 | 範例 |
+|-------------|------|------|
+| `IAP_EMAIL` | Google IAP 登入帳號 | `jay.huang@ikala.tv` |
+| `IAP_PASSWORD` | Google IAP 登入密碼 | (您的 Google 密碼) |
+| `COMPANY_EMAIL` | 公司系統登入帳號 | (公司內部帳號) |
+| `COMPANY_PASSWORD` | 公司系統登入密碼 | (公司內部密碼) |
+
+---
+
+## 🚀 自動化運作方式
+
+設定完成後，每次 GitHub Actions 執行時會自動：
+
+1. ✅ 第一階段：使用 `IAP_EMAIL` 和 `IAP_PASSWORD` 通過 Google IAP
+2. ✅ 第二階段：使用 `COMPANY_EMAIL` 和 `COMPANY_PASSWORD` 登入公司系統
+3. ✅ 提取最新 Cookie 並更新環境檔案
+4. ✅ 使用最新 Cookie 執行 API 測試
+
+**完全自動化，不需要手動操作！**
+
+---
+
+## 🔧 備用方案：手動更新
+
+如果自動登入失敗，可以使用半自動工具：
 
 ```bash
-# 1. 安裝依賴（第一次執行時）
-npm install
-
-# 2. 執行 Cookie 輔助工具
 npm run get-cookie
 ```
 
-**工具會做什麼：**
-1. 開啟瀏覽器並前往登入頁面
-2. 等待您手動完成登入（包含 2FA 驗證）
-3. 您按下 Enter 後，自動提取所有 Cookies
-4. 顯示 Cookie 字串供您複製
-
-**接著：**
-1. 複製工具輸出的 Cookie 字串
-2. 前往 GitHub: https://github.com/kusodevil/My-API-Testing-Lab/settings/secrets/actions
-3. 更新 `COMPANY_COOKIE` secret
-4. 完成！下次測試就會使用新的 Cookie
+這會開啟瀏覽器讓您手動登入，登入完成後自動提取 Cookie。
 
 ---
 
