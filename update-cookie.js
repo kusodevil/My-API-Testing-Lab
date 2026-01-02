@@ -47,7 +47,7 @@ const fs = require('fs');
             const nextButton = await page.$('button:not([disabled])');
             if (nextButton) {
                 await nextButton.click();
-                await page.waitForTimeout(2000);
+                await new Promise(resolve => setTimeout(resolve, 2000));
             }
 
             // 輸入密碼
