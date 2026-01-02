@@ -1,14 +1,14 @@
 {
   "name": "my-api-testing-lab",
   "version": "1.0.0",
-  "description": "![API Test Status](https://github.com/kusodevil/My-API-Testing-Lab/actions/workflows/api-test.yml/badge.svg) # My-API-Testing-Lab \"This is my first local edit from Mac.\"",
+  "description": "Automated API testing lab with Newman and Postman, featuring automatic cookie refresh for IAP-protected endpoints",
   "main": "index.js",
-"scripts": {
-  "test": "echo \"Error: no test specified\" && exit 1",
-  "test:api": "newman run \"Swagger Petstore.postman_collection.json\" -d pet-data.json",
-  "update-cookie": "node update-cookie.js",
-  "get-cookie": "node get-cookie-helper.js"
-},
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "test:api": "newman run \"Swagger Petstore.postman_collection.json\" -d pet-data.json",
+    "update-cookie": "node update-cookie.js",
+    "get-cookie": "node get-cookie-helper.js"
+  },
   "dependencies": {
     "puppeteer": "^23.0.0"
   },
@@ -16,7 +16,14 @@
     "type": "git",
     "url": "git+https://github.com/kusodevil/My-API-Testing-Lab.git"
   },
-  "keywords": [],
+  "keywords": [
+    "api-testing",
+    "postman",
+    "newman",
+    "automation",
+    "ci-cd",
+    "puppeteer"
+  ],
   "author": "",
   "license": "ISC",
   "bugs": {

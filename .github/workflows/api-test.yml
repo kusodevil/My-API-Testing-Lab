@@ -1,18 +1,24 @@
-name: API Automated Testing 
+name: API Automated Testing
 
 on:
+  # 當推送到 main 分支時觸發
   push:
     branches:
       - main
-  # 新增定時觸發
+
+  # 定時觸發：每天台灣時間早上 9:00 執行
+  # Cron 語法使用 UTC 時間，台灣 GMT+8 需要減 8 小時
+  # 格式：分 時 日 月 週 (0 1 * * * = UTC 1:00 = 台灣時間 9:00)
   schedule:
-    # 這裡使用的是 UTC 時間，台灣時間 (GMT+8) 要減掉 8 小時
-    # 範例：每天早上 9:00 (台灣時間) 跑一次 = UTC 1:00
     - cron: '0 1 * * *'
-  # 允許手動點擊按鈕執行 (測試時很好用)
+
+  # 允許在 GitHub Actions 頁面手動觸發執行
   workflow_dispatch:
 
-# 加強權限設定，讓 Actions 能夠把網頁發布出去
+# GitHub Actions 權限設定
+# - contents: read   => 讀取專案檔案
+# - pages: write     => 寫入 GitHub Pages
+# - id-token: write  => 寫入 OIDC token (用於安全部署)
 permissions:
   contents: read
   pages: write
@@ -21,26 +27,34 @@ permissions:
 jobs:
   test-api:
     runs-on: ubuntu-latest
-    # 設定環境，這會跟 GitHub Pages 連結
+
+    # 設定部署環境為 GitHub Pages
     environment:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
 
     steps:
+      # Step 1: 簽出程式碼
       - name: Checkout code
         uses: actions/checkout@v4
 
+      # Step 2: 安裝 Node.js 環境
       - name: Install Node.js
         uses: actions/setup-node@v4
         with:
           node-version: '20'
 
+      # Step 3: 全域安裝 Newman CLI 及 HTML 報告產生器
       - name: Install Newman
         run: npm install -g newman newman-reporter-htmlextra
 
+      # Step 4: 安裝專案依賴 (Puppeteer)
       - name: Install Dependencies
         run: npm install
 
+      # Step 5: 自動更新 IAP Cookie
+      # 使用 Puppeteer 自動登入公司網站，取得最新的認證 Cookie
+      # 需要 4 個環境變數：IAP 帳密 + 公司系統帳密
       - name: Update Company Cookie
         run: npm run update-cookie
         env:
@@ -49,6 +63,8 @@ jobs:
           COMPANY_EMAIL: ${{ secrets.COMPANY_EMAIL }}
           COMPANY_PASSWORD: ${{ secrets.COMPANY_PASSWORD }}
 
+      # Step 6: 執行 Petstore API 測試（範例）
+      # 使用 Newman 執行測試並生成 HTML 報告
       - name: Run API Tests
         run: |
           newman run "Swagger Petstore.postman_collection.json" \
@@ -57,49 +73,60 @@ jobs:
           -r htmlextra \
           --reporter-htmlextra-export index.html
 
+      # Step 7: 執行公司 API 測試
+      # 使用更新後的 Cookie 執行測試，並提取工作區資訊供 Slack 通知使用
       - name: Run Company API Test
         run: |
+          # 執行 Newman 測試並匯出環境變數到檔案
           newman run ./Kolr.postman_collection.json \
           -e ./STG-Env.postman_environment.json \
           --env-var "company_cookie=${{ secrets.COMPANY_COOKIE }}" \
           --reporters cli \
           --export-environment ./STG-Env-output.postman_environment.json
 
-          # 提取環境變數供後續步驟使用
+          # 從輸出的環境變數檔案中提取工作區資訊
           WORKSPACE_COUNT=$(jq -r '.values[] | select(.key=="workspace_count") | .value' STG-Env-output.postman_environment.json)
           ALL_WORKSPACE_NAMES=$(jq -r '.values[] | select(.key=="all_workspace_names") | .value' STG-Env-output.postman_environment.json)
 
+          # 將變數存入 GitHub 環境變數供後續步驟使用
           echo "WORKSPACE_COUNT=${WORKSPACE_COUNT}" >> $GITHUB_ENV
           echo "ALL_WORKSPACE_NAMES=${ALL_WORKSPACE_NAMES}" >> $GITHUB_ENV
 
-          # Debug: 顯示提取的值
+          # Debug: 顯示提取的值（方便追蹤問題）
           echo "提取的工作區數量: ${WORKSPACE_COUNT}"
           echo "提取的工作區名稱: ${ALL_WORKSPACE_NAMES}"
 
-      # 新增步驟：將 index.html 打包成網頁格式
+      # Step 8: 設定 GitHub Pages
+      # 準備將測試報告部署到 GitHub Pages
       - name: Setup Pages
         uses: actions/configure-pages@v4
 
+      # Step 9: 上傳測試報告檔案
+      # 將生成的 index.html 測試報告上傳為 Pages artifact
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
         with:
-          path: '.' # 將當前目錄下的 index.html 上傳
+          path: '.'
 
-      # 新增步驟：正式部署到網頁網址
+      # Step 10: 部署到 GitHub Pages
+      # 將測試報告發布到 https://kusodevil.github.io/My-API-Testing-Lab/
       - name: Deploy to GitHub Pages
         id: deployment
         uses: actions/deploy-pages@v4
 
+      # Step 11: 準備 Slack 通知訊息
+      # 根據測試結果組合訊息內容，包含工作區統計資訊
       - name: Prepare Slack Message
-        if: always()
+        if: always()  # 無論測試成功或失敗都執行
         run: |
+          # 根據測試結果決定狀態訊息
           if [ "${{ job.status }}" == "success" ]; then
             STATUS_MSG="✅ API 測試全數通過！"
           else
             STATUS_MSG="❌ API 測試發現 Bug！"
           fi
 
-          # 建立完整訊息
+          # 組合完整的通知訊息
           MESSAGE="${STATUS_MSG}
 
           📋 今日測試完成，共掃描 ${WORKSPACE_COUNT} 個工作區
@@ -108,13 +135,15 @@ jobs:
           📊 即時儀表板：https://kusodevil.github.io/My-API-Testing-Lab/
           (請查看 GitHub Actions 確認失敗詳情)"
 
-          # 輸出到環境變數
+          # 使用 heredoc 將多行訊息存入環境變數
           echo "SLACK_MESSAGE<<EOF" >> $GITHUB_ENV
           echo "$MESSAGE" >> $GITHUB_ENV
           echo "EOF" >> $GITHUB_ENV
 
+      # Step 12: 發送 Slack 通知
+      # 將測試結果及工作區統計資訊發送到 Slack 頻道
       - name: Slack Notification
-        if: always()
+        if: always()  # 無論測試成功或失敗都發送通知
         uses: rtCamp/action-slack-notify@v2
         env:
           SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK_URL }}
