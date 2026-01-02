@@ -62,14 +62,19 @@ jobs:
           newman run ./Kolr.postman_collection.json \
           -e ./STG-Env.postman_environment.json \
           --env-var "company_cookie=${{ secrets.COMPANY_COOKIE }}" \
-          --reporters cli
+          --reporters cli \
+          --export-environment ./STG-Env-output.postman_environment.json
 
           # 提取環境變數供後續步驟使用
-          WORKSPACE_COUNT=$(jq -r '.values[] | select(.key=="workspace_count") | .value' STG-Env.postman_environment.json)
-          ALL_WORKSPACE_NAMES=$(jq -r '.values[] | select(.key=="all_workspace_names") | .value' STG-Env.postman_environment.json)
+          WORKSPACE_COUNT=$(jq -r '.values[] | select(.key=="workspace_count") | .value' STG-Env-output.postman_environment.json)
+          ALL_WORKSPACE_NAMES=$(jq -r '.values[] | select(.key=="all_workspace_names") | .value' STG-Env-output.postman_environment.json)
 
           echo "WORKSPACE_COUNT=${WORKSPACE_COUNT}" >> $GITHUB_ENV
           echo "ALL_WORKSPACE_NAMES=${ALL_WORKSPACE_NAMES}" >> $GITHUB_ENV
+
+          # Debug: 顯示提取的值
+          echo "提取的工作區數量: ${WORKSPACE_COUNT}"
+          echo "提取的工作區名稱: ${ALL_WORKSPACE_NAMES}"
 
       # 新增步驟：將 index.html 打包成網頁格式
       - name: Setup Pages
