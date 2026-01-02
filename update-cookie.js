@@ -31,7 +31,8 @@ const fs = require('fs');
 
         // 等待並輸入 Google email
         await page.waitForSelector('input[type="email"]', { timeout: 30000 });
-        await page.type('input[type="email"]', process.env.IAP_EMAIL, { delay: 100 });
+        const emailSelector = 'input[type="email"]';
+        await page.type(emailSelector, process.env.IAP_EMAIL, { delay: 100 });
         console.log('✅ 已輸入 IAP Email:', process.env.IAP_EMAIL);
 
         // 點擊"下一步"
@@ -42,7 +43,8 @@ const fs = require('fs');
         // 等待並輸入 Google 密碼
         await page.waitForSelector('input[type="password"]', { visible: true, timeout: 30000 });
         await new Promise(resolve => setTimeout(resolve, 1000));
-        await page.type('input[type="password"]', process.env.IAP_PASSWORD, { delay: 100 });
+        const passwordSelector = 'input[type="password"]';
+        await page.type(passwordSelector, process.env.IAP_PASSWORD, { delay: 100 });
         console.log('✅ 已輸入 IAP 密碼');
 
         // 送出 IAP 登入
