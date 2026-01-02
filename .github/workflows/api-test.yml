@@ -64,6 +64,13 @@ jobs:
           --env-var "company_cookie=${{ secrets.COMPANY_COOKIE }}" \
           --reporters cli,rtbot
 
+          # 提取環境變數供後續步驟使用
+          WORKSPACE_COUNT=$(jq -r '.values[] | select(.key=="workspace_count") | .value' STG-Env.postman_environment.json)
+          ALL_WORKSPACE_NAMES=$(jq -r '.values[] | select(.key=="all_workspace_names") | .value' STG-Env.postman_environment.json)
+
+          echo "WORKSPACE_COUNT=${WORKSPACE_COUNT}" >> $GITHUB_ENV
+          echo "ALL_WORKSPACE_NAMES=${ALL_WORKSPACE_NAMES}" >> $GITHUB_ENV
+
       # 新增步驟：將 index.html 打包成網頁格式
       - name: Setup Pages
         uses: actions/configure-pages@v4
@@ -78,14 +85,34 @@ jobs:
         id: deployment
         uses: actions/deploy-pages@v4
 
+      - name: Prepare Slack Message
+        if: always()
+        run: |
+          if [ "${{ job.status }}" == "success" ]; then
+            STATUS_MSG="✅ API 測試全數通過！"
+          else
+            STATUS_MSG="❌ API 測試發現 Bug！"
+          fi
+
+          # 建立完整訊息
+          MESSAGE="${STATUS_MSG}
+
+          📋 今日測試完成，共掃描 ${WORKSPACE_COUNT} 個工作區
+          🏢 包含：${ALL_WORKSPACE_NAMES}
+
+          📊 即時儀表板：https://kusodevil.github.io/My-API-Testing-Lab/
+          (請查看 GitHub Actions 確認失敗詳情)"
+
+          # 輸出到環境變數
+          echo "SLACK_MESSAGE<<EOF" >> $GITHUB_ENV
+          echo "$MESSAGE" >> $GITHUB_ENV
+          echo "EOF" >> $GITHUB_ENV
+
       - name: Slack Notification
         if: always()
         uses: rtCamp/action-slack-notify@v2
         env:
           SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK_URL }}
           SLACK_TITLE: 'API 測試結果通知'
-          SLACK_MESSAGE: |
-            ${{ job.status == 'success' && '✅ API 測試全數通過！' || '❌ API 測試發現 Bug！' }}
-            📊 即時儀表板：https://kusodevil.github.io/My-API-Testing-Lab/
-            (請查看 GitHub Actions 確認失敗詳情)
+          SLACK_MESSAGE: ${{ env.SLACK_MESSAGE }}
           SLACK_COLOR: ${{ job.status == 'success' && 'good' || 'danger' }}
