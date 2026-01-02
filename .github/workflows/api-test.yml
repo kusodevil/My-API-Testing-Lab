@@ -1,7 +1,16 @@
 name: API Automated Testing
+
 on:
   push:
-    branches: [ main ]
+    branches:
+      - main
+  # 新增定時觸發
+  schedule:
+    # 這裡使用的是 UTC 時間，台灣時間 (GMT+8) 要減掉 8 小時
+    # 範例：每天早上 9:00 (台灣時間) 跑一次 = UTC 1:00
+    - cron: '0 1 * * *'
+  # 允許手動點擊按鈕執行 (測試時很好用)
+  workflow_dispatch:
 
 # 加強權限設定，讓 Actions 能夠把網頁發布出去
 permissions:
