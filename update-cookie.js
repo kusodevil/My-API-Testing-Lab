@@ -61,15 +61,24 @@ const fs = require('fs');
         }
 
         console.log('⏳ 等待登入完成...');
-        // 等待登入成功後跳轉到主頁面
-        await page.waitForNavigation({
-            waitUntil: 'networkidle2',
-            timeout: 60000
-        });
+
+        // 不等待 navigation，改為等待特定元素或 URL 變化
+        // 因為 IAP 登入後可能不會觸發 navigation 事件
+        await new Promise(resolve => setTimeout(resolve, 5000));
+
+        // 檢查是否登入成功（URL 應該已經不是登入頁面）
+        const currentUrl = page.url();
+        console.log('當前 URL:', currentUrl);
+
+        if (currentUrl.includes('/login')) {
+            console.log('⚠️  似乎還在登入頁面，等待更久一點...');
+            await new Promise(resolve => setTimeout(resolve, 10000));
+        }
 
         console.log('🍪 正在提取 Cookies...');
-        // 取得所有 cookies
-        const cookies = await page.cookies();
+        // 取得所有 cookies (使用 CDP session 獲取)
+        const client = await page.createCDPSession();
+        const { cookies } = await client.send('Network.getAllCookies');
 
         // 將 cookies 組合成字串格式
         const cookieString = cookies
