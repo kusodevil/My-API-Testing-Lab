@@ -31,34 +31,33 @@ const fs = require('fs');
         // 如果是 Google IAP，可能需要點擊 Google 登入按鈕
         // 這裡提供兩種情境的程式碼
 
-        // 情境 1：一般登入表單
+        // Google IAP 登入流程
+        console.log('📧 開始 Google IAP 登入流程...');
+
+        // 等待並輸入 email
+        await page.waitForSelector('input[type="email"]', { timeout: 30000 });
+        await page.type('input[type="email"]', process.env.COMPANY_EMAIL, { delay: 100 });
+        console.log('✅ 已輸入 email');
+
+        // 點擊"下一步"按鈕（Google 登入第一步）
+        await new Promise(resolve => setTimeout(resolve, 1000));
+        await page.keyboard.press('Enter');
+        console.log('⏭️  已點擊下一步');
+
+        // 等待密碼輸入框出現（可能需要較長時間）
         try {
-            await page.waitForSelector('input[type="email"]', { timeout: 5000 });
-            await page.type('input[type="email"]', process.env.COMPANY_EMAIL);
-            await page.type('input[type="password"]', process.env.COMPANY_PASSWORD);
-            await page.click('button[type="submit"]');
-        } catch (e) {
-            // 情境 2：Google IAP 登入
-            console.log('📧 偵測到 Google 登入...');
-            await page.waitForSelector('input[type="email"]', { timeout: 10000 });
-            await page.type('input[type="email"]', process.env.COMPANY_EMAIL);
-
-            // 點擊下一步
-            const nextButton = await page.$('button:not([disabled])');
-            if (nextButton) {
-                await nextButton.click();
-                await new Promise(resolve => setTimeout(resolve, 2000));
-            }
-
-            // 輸入密碼
-            await page.waitForSelector('input[type="password"]', { visible: true });
-            await page.type('input[type="password"]', process.env.COMPANY_PASSWORD);
+            await page.waitForSelector('input[type="password"]', { visible: true, timeout: 30000 });
+            await new Promise(resolve => setTimeout(resolve, 1000));
+            await page.type('input[type="password"]', process.env.COMPANY_PASSWORD, { delay: 100 });
+            console.log('✅ 已輸入密碼');
 
             // 點擊登入
-            const loginButton = await page.$('button[type="submit"]');
-            if (loginButton) {
-                await loginButton.click();
-            }
+            await new Promise(resolve => setTimeout(resolve, 1000));
+            await page.keyboard.press('Enter');
+            console.log('🔐 已送出登入');
+        } catch (passwordError) {
+            console.log('⚠️  密碼輸入框未出現，可能已經登入或需要其他驗證方式');
+            // 有些情況下可能已經有 session，直接繼續
         }
 
         console.log('⏳ 等待登入完成...');
