@@ -5,8 +5,12 @@
   "main": "index.js",
 "scripts": {
   "test": "echo \"Error: no test specified\" && exit 1",
-  "test:api": "newman run \"Swagger Petstore.postman_collection.json\" -d pet-data.json"
+  "test:api": "newman run \"Swagger Petstore.postman_collection.json\" -d pet-data.json",
+  "update-cookie": "node update-cookie.js"
 },
+  "dependencies": {
+    "puppeteer": "^23.0.0"
+  },
   "repository": {
     "type": "git",
     "url": "git+https://github.com/kusodevil/My-API-Testing-Lab.git"

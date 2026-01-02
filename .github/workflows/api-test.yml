@@ -1,4 +1,4 @@
-name: API Automated Testing 測試
+name: API Automated Testing 
 
 on:
   push:
@@ -37,6 +37,15 @@ jobs:
 
       - name: Install Newman
         run: npm install -g newman newman-reporter-htmlextra
+
+      - name: Install Dependencies
+        run: npm install
+
+      - name: Update Company Cookie
+        run: npm run update-cookie
+        env:
+          COMPANY_EMAIL: ${{ secrets.COMPANY_EMAIL }}
+          COMPANY_PASSWORD: ${{ secrets.COMPANY_PASSWORD }}
 
       - name: Run API Tests
         run: |
