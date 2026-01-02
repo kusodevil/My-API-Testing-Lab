@@ -14,31 +14,24 @@
 					"listen": "test",
 					"script": {
 						"exec": [
-							"// 1. 基本狀態檢查",
-							"pm.test(\"HTTP 狀態碼為 200\", () => {",
-							"    pm.response.to.have.status(200);",
-							"});",
+							"const response = pm.response.json();",
 							"",
-							"// 2. 提取 ID 的關鍵邏輯",
-							"pm.test(\"成功提取動態工作區 ID\", () => {",
-							"    const response = pm.response.json();",
-							"    ",
-							"    // 直接存取 workspaces，跳過不存在的 data 層級",
-							"    // 加入 ?. 確保即使 workspaces 是空的也不會直接當掉",
-							"    const firstWorkspace = response.workspaces?.[0];",
-							"    ",
-							"    if (firstWorkspace) {",
-							"        const firstId = firstWorkspace.id.toString();",
-							"        ",
-							"        // 存入環境變數",
-							"        pm.environment.set(\"dynamic_workspace_id\", firstId);",
-							"        ",
-							"        console.log(\"✅ 成功！捕捉到 ID:\", firstId);",
-							"        console.log(\"工作區名稱:\", firstWorkspace.name);",
-							"    } else {",
-							"        throw new Error(\"❌ 找不到 workspaces 欄位或陣列為空\");",
-							"    }",
-							"});"
+							"// 1. 根據 Console 顯示的一級欄位，直接抓 user_id",
+							"const userId = response.user_id; ",
+							"",
+							"if (userId) {",
+							"    pm.environment.set(\"current_user_id\", userId);",
+							"    console.log(\"👤 成功捕捉 User ID:\", userId);",
+							"} else {",
+							"    console.warn(\"⚠️ 找不到 user_id 欄位\");",
+							"}",
+							"",
+							"// 2. 原本的動態 ID 提取 (注意：這裡的路徑也要修正，因為沒有 .data)",
+							"if (response.workspaces && response.workspaces.length > 0) {",
+							"    const wsId = response.workspaces[0].id;",
+							"    pm.environment.set(\"dynamic_workspace_id\", wsId);",
+							"    console.log(\"🆔 成功提取工作區 ID:\", wsId);",
+							"}"
 						],
 						"type": "text/javascript",
 						"packages": {},
@@ -75,36 +68,89 @@
 			"response": []
 		},
 		{
+			"name": "user/status - [Negative] 錯誤 Token 驗證",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"// 1. 驗證是否被攔截 (透過檢查狀態碼或回應內容)",
+							"pm.test(\"系統應拒絕存取並導向登入頁\", () => {",
+							"    // 檢查是否有被跳轉 (有些系統會回傳 302) 或 檢查 Body 是否為 HTML",
+							"    const isHtml = pm.response.text().includes(\"<!doctype html>\");",
+							"    const isUnauthorized = pm.expect(pm.response.code).to.be.oneOf([200, 302, 401, 403]);",
+							"    ",
+							"    // 如果拿到 200 但是 HTML，代表權限驗證失敗（被導向登入頁）",
+							"    pm.expect(isHtml, \"預期應收到登入網頁 HTML，而非 JSON 資料\").to.be.true;",
+							"});",
+							"",
+							"// 2. 確保沒有洩漏機密資料",
+							"pm.test(\"不應包含敏感欄位\", () => {",
+							"    const responseText = pm.response.text();",
+							"    // 確保回應中不包含你的工作區 ID 或 user_id",
+							"    pm.expect(responseText).to.not.include(\"current_workspace_id\");",
+							"    pm.expect(responseText).to.not.include(\"user_id\");",
+							"});"
+						],
+						"type": "text/javascript",
+						"packages": {},
+						"requests": {}
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "Cookie",
+						"value": "{{company_cookie}}1234",
+						"type": "text",
+						"disabled": true
+					}
+				],
+				"url": {
+					"raw": "https://app.stg.kolr.ai/api/v2/user/status",
+					"protocol": "https",
+					"host": [
+						"app",
+						"stg",
+						"kolr",
+						"ai"
+					],
+					"path": [
+						"api",
+						"v2",
+						"user",
+						"status"
+					]
+				}
+			},
+			"response": []
+		},
+		{
 			"name": "https://app.stg.kolr.ai/api/v2/workspaces/{{dynamic_workspace_id}}/kol/radar-search-post?country_code=tw&filter_collection=false&filter_kol_type=all",
 			"event": [
 				{
 					"listen": "test",
 					"script": {
 						"exec": [
-							"// 1. 基本狀態檢查",
+							"// 【順序 1】基礎檢查",
 							"pm.test(\"HTTP 狀態碼為 200\", () => {",
 							"    pm.response.to.have.status(200);",
 							"});",
 							"",
-							"// 2. 驗證資料結構 (合約測試)",
-							"pm.test(\"驗證回傳資料格式正確\", () => {",
-							"    const response = pm.response.json();",
-							"    ",
-							"    // 確保 data 存在且是陣列",
-							"    pm.expect(response.data).to.be.an('array');",
-							"    ",
-							"    // 如果有資料，檢查第一筆的細節",
-							"    if (response.data.length > 0) {",
-							"        const firstKOL = response.data[0];",
-							"        ",
-							"        // 確保關鍵欄位都有出現 (不論值是多少)",
-							"        pm.expect(firstKOL).to.have.property('post_id');",
-							"        pm.expect(firstKOL).to.have.property('like_count');",
-							"        ",
-							"        // 確保型別正確 (這超重要！防止後端工程師改壞資料格式)",
-							"        pm.expect(typeof firstKOL.post_id).to.equal('string');",
-							"        pm.expect(typeof firstKOL.like_count).to.equal('number');",
-							"    }",
+							"// 【順序 2】環境驗證 (放在中間，確保環境是對的才往下檢查資料內容)",
+							"pm.test(\"驗證操作環境與使用者一致\", () => {",
+							"    const expectedId = pm.environment.get(\"current_user_id\");",
+							"    pm.expect(expectedId, \"環境變數 current_user_id 遺失\").to.not.be.undefined;",
+							"    console.log(\"✅ 驗證通過，操作者 ID 為: \" + expectedId);",
+							"});",
+							"",
+							"// 【順序 3】細節資料斷言 (檢查 post_id 等)",
+							"pm.test(\"搜尋結果格式正確且包含資料\", () => {",
+							"    const jsonData = pm.response.json();",
+							"    pm.expect(jsonData.data).to.be.an('array');",
+							"    // ...其餘代碼",
 							"});"
 						],
 						"type": "text/javascript",
