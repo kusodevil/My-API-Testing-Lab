@@ -62,7 +62,7 @@ jobs:
           newman run ./Kolr.postman_collection.json \
           -e ./STG-Env.postman_environment.json \
           --env-var "company_cookie=${{ secrets.COMPANY_COOKIE }}" \
-          --reporters cli,rtbot
+          --reporters cli
 
           # 提取環境變數供後續步驟使用
           WORKSPACE_COUNT=$(jq -r '.values[] | select(.key=="workspace_count") | .value' STG-Env.postman_environment.json)
