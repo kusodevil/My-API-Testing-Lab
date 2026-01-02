@@ -6,7 +6,8 @@
 "scripts": {
   "test": "echo \"Error: no test specified\" && exit 1",
   "test:api": "newman run \"Swagger Petstore.postman_collection.json\" -d pet-data.json",
-  "update-cookie": "node update-cookie.js"
+  "update-cookie": "node update-cookie.js",
+  "get-cookie": "node get-cookie-helper.js"
 },
   "dependencies": {
     "puppeteer": "^23.0.0"

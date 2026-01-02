@@ -1,51 +1,38 @@
-# 🍪 自動更新 Cookie 設定指南
+# 🍪 Cookie 更新指南
 
 ## 問題說明
-因為公司網站使用 IAP (Identity-Aware Proxy)，Cookie 會定期過期，需要自動更新以確保 API 測試正常運作。
+因為公司網站使用 IAP (Identity-Aware Proxy) 並啟用 2FA，Cookie 會定期過期，需要定期更新以確保 API 測試正常運作。
 
 ## 解決方案
-使用 Puppeteer 自動登入並取得最新的 Cookie。
+使用輔助工具開啟瀏覽器，手動完成登入（包含 2FA），然後自動提取 Cookie。
 
 ---
 
-## 📋 設定步驟
+## 📋 更新 Cookie 步驟
 
-### 1. 在 GitHub 新增 Secrets
+### 方法：使用輔助工具半自動更新
 
-前往您的 GitHub Repository：
-1. 點擊 **Settings** → **Secrets and variables** → **Actions**
-2. 點擊 **New repository secret**
-3. 新增以下兩個 secrets：
-
-| Secret Name | Value |
-|-------------|-------|
-| `COMPANY_EMAIL` | 您的公司登入帳號（email） |
-| `COMPANY_PASSWORD` | 您的公司登入密碼 |
-
-⚠️ **注意**：這些 secrets 只有在 GitHub Actions 中可見，其他人無法看到。
-
----
-
-### 2. 本地測試（可選）
-
-如果想在本地測試自動更新功能：
+當 Cookie 過期時（通常 API 測試會開始失敗），執行以下步驟：
 
 ```bash
-# 安裝依賴
+# 1. 安裝依賴（第一次執行時）
 npm install
 
-# 設定環境變數
-export COMPANY_EMAIL="your-email@company.com"
-export COMPANY_PASSWORD="your-password"
-
-# 執行更新
-npm run update-cookie
+# 2. 執行 Cookie 輔助工具
+npm run get-cookie
 ```
 
-成功後會看到：
-```
-✅ Cookie 已更新到 STG-Env.postman_environment.json
-```
+**工具會做什麼：**
+1. 開啟瀏覽器並前往登入頁面
+2. 等待您手動完成登入（包含 2FA 驗證）
+3. 您按下 Enter 後，自動提取所有 Cookies
+4. 顯示 Cookie 字串供您複製
+
+**接著：**
+1. 複製工具輸出的 Cookie 字串
+2. 前往 GitHub: https://github.com/kusodevil/My-API-Testing-Lab/settings/secrets/actions
+3. 更新 `COMPANY_COOKIE` secret
+4. 完成！下次測試就會使用新的 Cookie
 
 ---
 

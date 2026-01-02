@@ -41,12 +41,6 @@ jobs:
       - name: Install Dependencies
         run: npm install
 
-      - name: Update Company Cookie
-        run: npm run update-cookie
-        env:
-          COMPANY_EMAIL: ${{ secrets.COMPANY_EMAIL }}
-          COMPANY_PASSWORD: ${{ secrets.COMPANY_PASSWORD }}
-
       - name: Run API Tests
         run: |
           newman run "Swagger Petstore.postman_collection.json" \
