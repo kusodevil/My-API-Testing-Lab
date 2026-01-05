@@ -134,11 +134,9 @@ jobs:
           # 組合完整的通知訊息
           MESSAGE="${STATUS_MSG}
 
-          📋 今日測試完成，共掃描 ${WORKSPACE_COUNT} 個工作區
-          🏢 包含：${ALL_WORKSPACE_NAMES}
+          📋 ${ALL_WORKSPACE_NAMES}
 
-          📊 即時儀表板：https://kusodevil.github.io/My-API-Testing-Lab/
-          (請查看 GitHub Actions 確認失敗詳情)"
+          📊 測試報告：https://kusodevil.github.io/My-API-Testing-Lab/"
 
           # 使用 heredoc 將多行訊息存入環境變數
           echo "SLACK_MESSAGE<<EOF" >> $GITHUB_ENV
