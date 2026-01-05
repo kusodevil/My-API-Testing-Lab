@@ -41,16 +41,39 @@ const fs = require('fs');
         console.log('⏭️  已點擊下一步');
 
         // 等待並輸入 Google 密碼
-        await page.waitForSelector('input[type="password"]', { visible: true, timeout: 30000 });
-        await new Promise(resolve => setTimeout(resolve, 1000));
-        const passwordSelector = 'input[type="password"]';
-        await page.type(passwordSelector, process.env.IAP_PASSWORD, { delay: 100 });
-        console.log('✅ 已輸入 IAP 密碼');
+        console.log('⏳ 等待密碼輸入框出現...');
+        try {
+            // 嘗試多種選擇器，因為 Google 登入頁面可能有不同的結構
+            const passwordInput = await Promise.race([
+                page.waitForSelector('input[type="password"]', { visible: true, timeout: 30000 }),
+                page.waitForSelector('input[name="password"]', { visible: true, timeout: 30000 }),
+                page.waitForSelector('#password', { visible: true, timeout: 30000 })
+            ]);
 
-        // 送出 IAP 登入
-        await new Promise(resolve => setTimeout(resolve, 1000));
-        await page.keyboard.press('Enter');
-        console.log('🔐 已送出 IAP 登入');
+            await new Promise(resolve => setTimeout(resolve, 1000));
+            await passwordInput.type(process.env.IAP_PASSWORD, { delay: 100 });
+            console.log('✅ 已輸入 IAP 密碼');
+
+            // 送出 IAP 登入
+            await new Promise(resolve => setTimeout(resolve, 1000));
+            await page.keyboard.press('Enter');
+            console.log('🔐 已送出 IAP 登入');
+
+        } catch (waitError) {
+            console.log('⚠️  找不到密碼輸入框，可能已經自動登入或頁面結構改變');
+            const currentUrl = await page.url();
+            console.log('📍 當前 URL:', currentUrl);
+
+            await page.screenshot({ path: 'password-page-debug.png', fullPage: true });
+            console.log('📸 截圖已儲存: password-page-debug.png');
+
+            // 檢查是否已經跳過密碼頁面（可能已登入）
+            if (currentUrl.includes('app.stg.kolr.ai')) {
+                console.log('ℹ️  似乎已經自動登入，繼續後續流程...');
+            } else {
+                throw new Error('等待密碼輸入框超時，請檢查截圖');
+            }
+        }
 
         // 等待 IAP 驗證完成
         console.log('⏳ 等待 IAP 驗證...');
@@ -135,16 +158,25 @@ const fs = require('fs');
 
     } catch (error) {
         console.error('❌ 發生錯誤:', error.message);
-        // 截圖以便除錯
+
+        // 嘗試截圖以便除錯
         try {
-            await page.screenshot({ path: 'error-screenshot.png' });
-            console.log('📸 錯誤截圖已儲存: error-screenshot.png');
+            if (page) {
+                const currentUrl = await page.url();
+                console.log('📍 錯誤發生時的 URL:', currentUrl);
+
+                await page.screenshot({ path: 'error-screenshot.png', fullPage: true });
+                console.log('📸 錯誤截圖已儲存: error-screenshot.png');
+            }
         } catch (screenshotError) {
-            console.error('無法儲存截圖:', screenshotError.message);
+            console.error('⚠️  無法儲存截圖:', screenshotError.message);
         }
+
         process.exit(1);
     } finally {
-        await browser.close();
-        console.log('🔒 瀏覽器已關閉');
+        if (browser) {
+            await browser.close();
+            console.log('🔒 瀏覽器已關閉');
+        }
     }
 })();
