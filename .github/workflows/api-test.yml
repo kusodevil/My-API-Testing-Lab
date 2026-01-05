@@ -89,25 +89,23 @@ jobs:
           --reporters cli \
           --export-environment ./STG-Env-output.postman_environment.json
 
-          # 從輸出的環境變數檔案中提取工作區資訊
+          # 從輸出的環境變數檔案中提取資訊
+          # 這些變數名稱需要與 Postman 測試腳本中 pm.environment.set() 的 key 一致
           WORKSPACE_COUNT=$(jq -r '.values[] | select(.key=="workspace_count") | .value' STG-Env-output.postman_environment.json)
           ALL_WORKSPACE_NAMES=$(jq -r '.values[] | select(.key=="all_workspace_names") | .value' STG-Env-output.postman_environment.json)
 
-          # 提取效能警告狀態
-          PERFORMANCE_WARNING=$(jq -r '.values[] | select(.key=="performance_warning") | .value' STG-Env-output.postman_environment.json)
-          PERFORMANCE_TIME=$(jq -r '.values[] | select(.key=="performance_time") | .value' STG-Env-output.postman_environment.json)
+          # 效能狀態訊息（由 Postman 直接產生完整訊息）
+          PERF_STATUS=$(jq -r '.values[] | select(.key=="perf_status") | .value' STG-Env-output.postman_environment.json)
 
           # 將變數存入 GitHub 環境變數供後續步驟使用
           echo "WORKSPACE_COUNT=${WORKSPACE_COUNT}" >> $GITHUB_ENV
           echo "ALL_WORKSPACE_NAMES=${ALL_WORKSPACE_NAMES}" >> $GITHUB_ENV
-          echo "PERFORMANCE_WARNING=${PERFORMANCE_WARNING}" >> $GITHUB_ENV
-          echo "PERFORMANCE_TIME=${PERFORMANCE_TIME}" >> $GITHUB_ENV
+          echo "PERF_STATUS=${PERF_STATUS}" >> $GITHUB_ENV
 
           # Debug: 顯示提取的值（方便追蹤問題）
           echo "提取的工作區數量: ${WORKSPACE_COUNT}"
           echo "提取的工作區名稱: ${ALL_WORKSPACE_NAMES}"
-          echo "效能警告狀態: ${PERFORMANCE_WARNING}"
-          echo "回應時間: ${PERFORMANCE_TIME}ms"
+          echo "效能狀態: ${PERF_STATUS}"
 
       # Step 8: 設定 GitHub Pages
       # 準備將測試報告部署到 GitHub Pages
@@ -128,17 +126,19 @@ jobs:
         uses: actions/deploy-pages@v4
 
       # Step 11: 準備 Slack 通知訊息
-      # 根據測試結果組合訊息內容，包含工作區統計資訊和效能警告
+      # 根據測試結果組合訊息內容，包含工作區統計資訊和效能狀態
+      # 效能狀態訊息 (PERF_STATUS) 由 Postman 腳本直接產生
       - name: Prepare Slack Message
         if: always()  # 無論測試成功或失敗都執行
         run: |
-          # 根據測試結果和效能警告決定狀態訊息
+          # 根據測試結果決定狀態訊息和顏色
           if [ "${{ job.status }}" == "success" ]; then
-            if [ "${PERFORMANCE_WARNING}" == "true" ]; then
-              STATUS_MSG="⚠️ API 測試通過，但有效能警示（${PERFORMANCE_TIME}ms）"
+            # 測試通過：使用 Postman 產生的效能狀態訊息
+            STATUS_MSG="${PERF_STATUS:-✅ API 測試全數通過}"
+            # 根據訊息內容決定顏色（包含警示則為橘色）
+            if [[ "${PERF_STATUS}" == *"警示"* ]]; then
               SLACK_COLOR="warning"
             else
-              STATUS_MSG="✅ API 測試全數通過！"
               SLACK_COLOR="good"
             fi
           else
