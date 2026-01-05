@@ -16,7 +16,7 @@
 						"exec": [
 							"// 1. 取得回應時間並進行效能檢查",
 							"var responseTime = pm.response.responseTime;",
-							"var WARNING_LIMIT = 800;  // 超過 800ms 就算有點慢",
+							"var WARNING_LIMIT = 100;  // 超過 800ms 就算有點慢",
 							"var ERROR_LIMIT = 2000;   // 超過 2000ms 視為效能不及格",
 							"var statusEmoji = responseTime > WARNING_LIMIT ? \"⚠️\" : \"✅\";",
 							"",
