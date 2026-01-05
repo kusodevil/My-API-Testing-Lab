@@ -93,13 +93,21 @@ jobs:
           WORKSPACE_COUNT=$(jq -r '.values[] | select(.key=="workspace_count") | .value' STG-Env-output.postman_environment.json)
           ALL_WORKSPACE_NAMES=$(jq -r '.values[] | select(.key=="all_workspace_names") | .value' STG-Env-output.postman_environment.json)
 
+          # 提取效能警告狀態
+          PERFORMANCE_WARNING=$(jq -r '.values[] | select(.key=="performance_warning") | .value' STG-Env-output.postman_environment.json)
+          PERFORMANCE_TIME=$(jq -r '.values[] | select(.key=="performance_time") | .value' STG-Env-output.postman_environment.json)
+
           # 將變數存入 GitHub 環境變數供後續步驟使用
           echo "WORKSPACE_COUNT=${WORKSPACE_COUNT}" >> $GITHUB_ENV
           echo "ALL_WORKSPACE_NAMES=${ALL_WORKSPACE_NAMES}" >> $GITHUB_ENV
+          echo "PERFORMANCE_WARNING=${PERFORMANCE_WARNING}" >> $GITHUB_ENV
+          echo "PERFORMANCE_TIME=${PERFORMANCE_TIME}" >> $GITHUB_ENV
 
           # Debug: 顯示提取的值（方便追蹤問題）
           echo "提取的工作區數量: ${WORKSPACE_COUNT}"
           echo "提取的工作區名稱: ${ALL_WORKSPACE_NAMES}"
+          echo "效能警告狀態: ${PERFORMANCE_WARNING}"
+          echo "回應時間: ${PERFORMANCE_TIME}ms"
 
       # Step 8: 設定 GitHub Pages
       # 準備將測試報告部署到 GitHub Pages
@@ -120,15 +128,22 @@ jobs:
         uses: actions/deploy-pages@v4
 
       # Step 11: 準備 Slack 通知訊息
-      # 根據測試結果組合訊息內容，包含工作區統計資訊
+      # 根據測試結果組合訊息內容，包含工作區統計資訊和效能警告
       - name: Prepare Slack Message
         if: always()  # 無論測試成功或失敗都執行
         run: |
-          # 根據測試結果決定狀態訊息
+          # 根據測試結果和效能警告決定狀態訊息
           if [ "${{ job.status }}" == "success" ]; then
-            STATUS_MSG="✅ API 測試全數通過！"
+            if [ "${PERFORMANCE_WARNING}" == "true" ]; then
+              STATUS_MSG="⚠️ API 測試通過，但有效能警示（${PERFORMANCE_TIME}ms）"
+              SLACK_COLOR="warning"
+            else
+              STATUS_MSG="✅ API 測試全數通過！"
+              SLACK_COLOR="good"
+            fi
           else
             STATUS_MSG="❌ API 測試發現 Bug！"
+            SLACK_COLOR="danger"
           fi
 
           # 組合完整的通知訊息
@@ -143,8 +158,12 @@ jobs:
           echo "$MESSAGE" >> $GITHUB_ENV
           echo "EOF" >> $GITHUB_ENV
 
+          # 儲存 Slack 顏色
+          echo "SLACK_COLOR=${SLACK_COLOR}" >> $GITHUB_ENV
+
       # Step 12: 發送 Slack 通知
       # 將測試結果及工作區統計資訊發送到 Slack 頻道
+      # 顏色會根據測試結果和效能警告動態調整
       - name: Slack Notification
         if: always()  # 無論測試成功或失敗都發送通知
         uses: rtCamp/action-slack-notify@v2
@@ -152,4 +171,4 @@ jobs:
           SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK_URL }}
           SLACK_TITLE: 'API 測試結果通知'
           SLACK_MESSAGE: ${{ env.SLACK_MESSAGE }}
-          SLACK_COLOR: ${{ job.status == 'success' && 'good' || 'danger' }}
+          SLACK_COLOR: ${{ env.SLACK_COLOR }}
